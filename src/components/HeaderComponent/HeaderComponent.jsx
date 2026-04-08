@@ -1,8 +1,8 @@
 import { Col } from 'antd'
 import React from 'react'
 import { WrapperHeader, WrapperTextHeader, WarpHeaderAccount, WrapperTextHeaderSmall } from './style'
-import Search from 'antd/es/transfer/search'
 import { UserOutlined, CaretDownOutlined, ShoppingCartOutlined } from '@ant-design/icons'
+import ButttonInputSearch from '../ButtoninputSearch/ButtoninputSearch'
 
 const HeaderComponent = () => {
   return (
@@ -12,16 +12,16 @@ const HeaderComponent = () => {
           <WrapperTextHeader>QDPHONE</WrapperTextHeader>
         </Col>
         <Col span={12}>
-        <Search
-          placeholder="input search text"
-          allowClear
-          enterButton="Search"
+        <ButttonInputSearch
           size="large"
-          //OnSearch={onSearch}
+          textButton="Tìm kiếm"
+          placeholder="Nhập sản phẩm bạn muốn tìm"
+          // onSearch={onSearch}
+
         />
 
         </Col>
-        <Col span={6} style = {{display: 'flex', gap: '20px'}}>
+        <Col span={6} style = {{display: 'flex', gap: '20px', alignItems: 'center'}}>
           <WarpHeaderAccount>
             <UserOutlined style={{ fontSize: '30px' }} />
           <div>
