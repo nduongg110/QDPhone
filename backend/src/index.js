@@ -2,12 +2,11 @@ require('dotenv').config();
 const express = require('express');
 const sql = require('mssql');
 const cors = require('cors');
+const routes = require('./routes');
 const app = express();
-const routes = require('./routes')
-const bodyParser = require('body-parser')
+
 app.use(cors());
 app.use(express.json());
-
 
 const config = {
   user: process.env.DB_USER,
@@ -29,8 +28,7 @@ sql.connect(config)
     console.error("Database connection failed:", err);
   });
 
-app.use(express.json())
-routes(app);
+app.use('/api', routes);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

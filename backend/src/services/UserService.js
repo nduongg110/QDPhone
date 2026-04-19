@@ -9,7 +9,6 @@ const createUser = async (newUser) => {
     try {
         const { name, email, password, confirmPassword, phone } = newUser;
 
-        // 1. Check password
         if (password !== confirmPassword) {
             return {
                 status: 'ERR',
@@ -19,7 +18,6 @@ const createUser = async (newUser) => {
 
         const pool = await sql.connect();
 
-        // 2. Check email tồn tại
         const checkUser = await pool.request()
             .input('Email', sql.NVarChar, email)
             .query('SELECT * FROM Users WHERE Email = @Email');
@@ -31,10 +29,8 @@ const createUser = async (newUser) => {
             };
         }
 
-        // 3. Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // 4. Insert user
         const result = await pool.request()
             .input('Name', sql.NVarChar, name)
             .input('Email', sql.NVarChar, email)
@@ -46,10 +42,13 @@ const createUser = async (newUser) => {
                 VALUES (@Name, @Email, @Password, @Phone, '', '')
             `);
 
+        const user = result.recordset[0];
+        delete user.Password;
+
         return {
             status: 'OK',
             message: 'SUCCESS',
-            data: result.recordset[0]
+            data: user
         };
 
     } catch (e) {
@@ -66,7 +65,6 @@ const loginUser = async (userLogin) => {
 
         const pool = await sql.connect();
 
-        // 1. Check user tồn tại
         const result = await pool.request()
             .input('Email', sql.NVarChar, email)
             .query('SELECT * FROM Users WHERE Email = @Email');
@@ -80,7 +78,6 @@ const loginUser = async (userLogin) => {
             };
         }
 
-        // 2. So sánh password
         const isMatch = await bcrypt.compare(password, user.Password);
 
         if (!isMatch) {
@@ -90,18 +87,20 @@ const loginUser = async (userLogin) => {
             };
         }
 
-        // 3. Tạo token
+        // 🔥 TẠO TOKEN (FULL FIELD)
         const access_token = await genneralAccessToken({
             id: user.Id,
-            email: user.Email
+            email: user.Email,
+            isAdmin: user.IsAdmin
         });
 
         const refresh_token = await genneralRefreshToken({
             id: user.Id,
-            email: user.Email
+            email: user.Email,
+            isAdmin: user.IsAdmin
         });
 
-        // 4. Lưu refresh token vào DB
+        // 🔥 LƯU REFRESH TOKEN
         await pool.request()
             .input('RefreshToken', sql.NVarChar, refresh_token)
             .input('Id', sql.Int, user.Id)
@@ -111,11 +110,179 @@ const loginUser = async (userLogin) => {
                 WHERE Id = @Id
             `);
 
+        delete user.Password;
+
         return {
             status: 'OK',
             message: 'SUCCESS',
             access_token,
-            refresh_token
+            refresh_token,
+            user
+        };
+
+    } catch (e) {
+        throw e;
+    }
+};
+
+// =======================
+// UPDATE USER
+// =======================
+const updateUser = async (id, data) => {
+    try {
+        const pool = await sql.connect();
+
+        const checkUser = await pool.request()
+            .input('Id', sql.Int, id)
+            .query('SELECT * FROM Users WHERE Id = @Id');
+
+        const user = checkUser.recordset[0];
+
+        if (!user) {
+            return {
+                status: 'ERR',
+                message: 'The user is not defined'
+            };
+        }
+
+        let { name, email, password, phone } = data;
+
+        // Check email trùng
+        if (email && email !== user.Email) {
+            const checkEmail = await pool.request()
+                .input('Email', sql.NVarChar, email)
+                .query('SELECT * FROM Users WHERE Email = @Email');
+
+            if (checkEmail.recordset.length > 0) {
+                return {
+                    status: 'ERR',
+                    message: 'Email already exists'
+                };
+            }
+        }
+
+        // Hash password nếu có đổi
+        let newPassword = user.Password;
+        if (password && password.trim() !== '') {
+            newPassword = await bcrypt.hash(password, 10);
+        }
+
+        const result = await pool.request()
+            .input('Id', sql.Int, id)
+            .input('Name', sql.NVarChar, name || user.Name)
+            .input('Email', sql.NVarChar, email || user.Email)
+            .input('Password', sql.NVarChar, newPassword)
+            .input('Phone', sql.NVarChar, phone || user.Phone)
+            .query(`
+                UPDATE Users
+                SET 
+                    Name = @Name,
+                    Email = @Email,
+                    Password = @Password,
+                    Phone = @Phone
+                WHERE Id = @Id;
+
+                SELECT * FROM Users WHERE Id = @Id;
+            `);
+
+        const updatedUser = result.recordset[0];
+        delete updatedUser.Password;
+
+        return {
+            status: 'OK',
+            message: 'SUCCESS',
+            data: updatedUser
+        };
+
+    } catch (e) {
+        throw e;
+    }
+};
+
+// =======================
+// DELETE USER
+// =======================
+const deleteUser = async (id) => {
+    try {
+        const pool = await sql.connect();
+
+        const checkUser = await pool.request()
+            .input('Id', sql.Int, id)
+            .query('SELECT * FROM Users WHERE Id = @Id');
+
+        if (checkUser.recordset.length === 0) {
+            return {
+                status: 'ERR',
+                message: 'The user is not defined'
+            };
+        }
+
+        await pool.request()
+            .input('Id', sql.Int, id)
+            .query('DELETE FROM Users WHERE Id = @Id');
+
+        return {
+            status: 'OK',
+            message: 'Delete user success'
+        };
+
+    } catch (e) {
+        throw e;
+    }
+};
+
+// =======================
+// GET ALL USER
+// =======================
+const getAllUser = async () => {
+    try {
+        const pool = await sql.connect();
+
+        const result = await pool.request()
+            .query('SELECT * FROM Users');
+
+        const users = result.recordset.map(user => {
+            delete user.Password;
+            return user;
+        });
+
+        return {
+            status: 'OK',
+            message: 'SUCCESS',
+            data: users
+        };
+
+    } catch (e) {
+        throw e;
+    }
+};
+
+// =======================
+// GET DETAILS USER
+// =======================
+const getDetailsUser = async (id) => {
+    try {
+        const pool = await sql.connect();
+
+        const result = await pool.request()
+            .input('Id', sql.Int, id)
+            .query('SELECT * FROM Users WHERE Id = @Id');
+
+        const user = result.recordset[0];
+
+        if (!user) {
+            return {
+                status: 'ERR',
+                message: 'The user is not defined'
+            };
+        }
+
+        delete user.Password;
+
+        return {
+            status: 'OK',
+            message: 'SUCCESS',
+            data: user
         };
 
     } catch (e) {
@@ -125,5 +292,9 @@ const loginUser = async (userLogin) => {
 
 module.exports = {
     createUser,
-    loginUser
+    loginUser,
+    updateUser,
+    deleteUser,
+    getAllUser,
+    getDetailsUser
 };
