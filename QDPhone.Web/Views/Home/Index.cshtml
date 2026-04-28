@@ -1,0 +1,110 @@
+﻿@{
+    ViewData["Title"] = "Trang chủ";
+    var heroBanners = new[]
+    {
+        ("Ưu đãi điện thoại", "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=1400&q=80"),
+        ("Flagship mới", "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1400&q=80"),
+        ("Laptop và phụ kiện", "https://images.unsplash.com/photo-1526738549149-8e07eca6c147?auto=format&fit=crop&w=1400&q=80")
+    };
+    var sideBanners = new[]
+    {
+        ("Galaxy S26 Series", "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=600&q=80"),
+        ("Khuyến mãi Apple", "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=600&q=80")
+    };
+}
+
+<section class="home-hero mb-4">
+    <div class="row g-3">
+        <aside class="col-lg-3 d-none d-lg-block">
+            <div class="home-catalog card h-100">
+                <div class="card-body p-2">
+                    @foreach (var item in new[] { "Điện thoại", "Laptop", "Phụ kiện", "Đồng hồ", "Tablet", "Tai nghe", "Loa", "Máy ảnh", "PC", "Smart Home" })
+                    {
+                        <a href="#" class="catalog-item">
+                            <span>@item</span>
+                            <span class="material-symbols-outlined">chevron_right</span>
+                        </a>
+                    }
+                </div>
+            </div>
+        </aside>
+        <div class="col-lg-6">
+            <div id="heroCarousel" class="carousel slide h-100" data-bs-ride="carousel" data-bs-interval="4000">
+                <div class="carousel-indicators">
+                    @for (var i = 0; i < heroBanners.Length; i++)
+                    {
+                        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="@i" class="@(i == 0 ? "active" : null)"></button>
+                    }
+                </div>
+                <div class="carousel-inner rounded-3 overflow-hidden">
+                    @for (var i = 0; i < heroBanners.Length; i++)
+                    {
+                        var b = heroBanners[i];
+                        <div class="carousel-item @(i == 0 ? "active" : null)">
+                            <a href="#">
+                                <img src="@b.Item2" class="d-block w-100 hero-img" alt="@b.Item1" />
+                            </a>
+                        </div>
+                    }
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon"></span>
+                </button>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="hero-side-banners h-100">
+                @foreach (var b in sideBanners)
+                {
+                    <a href="#" class="hero-sub-banner">
+                        <img src="@b.Item2" alt="@b.Item1" />
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-4">
+    <div class="flash-sale-header d-flex align-items-center justify-content-between px-3 py-2 rounded-top">
+        <h3 class="mb-0 text-white">Flash Sale Online</h3>
+        <div class="flash-sale-countdown" data-target-time="@DateTime.UtcNow.AddHours(8).ToString("o")">08:00:00</div>
+    </div>
+    <div class="card border-top-0 rounded-top-0">
+        <div class="card-body">
+            <div class="row g-3 row-cols-2 row-cols-md-4 row-cols-xl-5">
+                @for (var i = 0; i < 5; i++)
+                {
+                    <div class="col">
+                        <partial name="_ProductCard" />
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mt-4">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+        <h2 class="section-title mb-0">Sản phẩm nổi bật</h2>
+        <a asp-controller="Products" asp-action="Index" class="btn btn-outline-danger btn-sm">Xem tất cả</a>
+    </div>
+    <div class="row g-3 row-cols-2 row-cols-md-4 row-cols-xl-5">
+        @for (var i = 0; i < 8; i++)
+        {
+            <div class="col">
+                <partial name="_ProductCard" />
+            </div>
+        }
+    </div>
+</section>
+
+<section class="usp-bar row g-3 mt-4 mb-2 py-3">
+    <div class="col-6 col-md-3"><span class="material-symbols-outlined">local_shipping</span>Miễn phí giao hàng toàn quốc</div>
+    <div class="col-6 col-md-3"><span class="material-symbols-outlined">cached</span>Đổi trả trong 30 ngày</div>
+    <div class="col-6 col-md-3"><span class="material-symbols-outlined">verified_user</span>Cam kết chính hãng 100%</div>
+    <div class="col-6 col-md-3"><span class="material-symbols-outlined">support_agent</span>Hỗ trợ 24/7</div>
+</section>

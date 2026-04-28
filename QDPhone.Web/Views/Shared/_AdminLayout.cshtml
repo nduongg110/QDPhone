@@ -1,0 +1,146 @@
+@using System.Security.Claims
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - QDPhone Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="admin-layout">
+    @{
+        var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+        var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
+        var userName = User.FindFirstValue("FullName") ?? User.Identity?.Name ?? "Quản trị viên";
+        var initials = string.Concat(userName
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Take(2)
+            .Select(x => char.ToUpperInvariant(x[0])));
+        var role = User.IsInRole("Admin") ? "Administrator" : "Staff";
+        var breadcrumb = ViewBag.Breadcrumb as string ?? $"{currentController} / {currentAction}";
+        var pendingOrders = ViewBag.PendingOrdersCount as int? ?? 0;
+
+        Func<string[], string[], string> activeClass = (controllers, actions) =>
+            controllers.Contains(currentController) && (actions.Length == 0 || actions.Contains(currentAction))
+                ? "active"
+                : string.Empty;
+    }
+
+    <div class="sidebar-overlay" data-sidebar-overlay></div>
+
+    <aside class="admin-sidebar" id="adminSidebar">
+        <div class="admin-logo-block">
+            <a class="admin-brand" asp-controller="Admin" asp-action="Dashboard">
+                <i class="bi bi-lightning-charge-fill"></i>
+                <span class="menu-text">HHM Admin</span>
+            </a>
+            <button class="btn btn-sm btn-outline-light admin-collapse-btn" type="button" data-sidebar-toggle>
+                <i class="bi bi-chevron-left"></i>
+            </button>
+        </div>
+
+        <div class="admin-user-block">
+            <div class="admin-avatar">@initials</div>
+            <div class="menu-text">
+                <div class="admin-user-name">@userName</div>
+                <span class="admin-role-badge">@role</span>
+            </div>
+        </div>
+
+        <nav class="admin-nav">
+            <div class="nav-item-label menu-text">Tổng quan</div>
+            <a class="@activeClass(new[] { "Admin" }, new[] { "Dashboard" })" asp-controller="Admin" asp-action="Dashboard" title="Dashboard">
+                <i class="bi bi-grid-1x2-fill"></i><span class="menu-text">Dashboard</span>
+            </a>
+
+            <div class="nav-item-label menu-text">Bán hàng</div>
+            <a class="@activeClass(new[] { "Admin" }, new[] { "Orders" })" asp-controller="Admin" asp-action="Orders" title="Đơn hàng">
+                <i class="bi bi-bag-fill"></i><span class="menu-text">Đơn hàng</span>
+                @if (pendingOrders > 0) { <span class="nav-badge nav-badge-danger">@pendingOrders</span> }
+            </a>
+            <a class="@activeClass(new[] { "Coupons" }, Array.Empty<string>())" asp-controller="Coupons" asp-action="Index" title="Mã giảm giá">
+                <i class="bi bi-tags-fill"></i><span class="menu-text">Mã giảm giá</span>
+            </a>
+
+            <div class="nav-item-label menu-text">Danh mục &amp; sản phẩm</div>
+            <a class="@activeClass(new[] { "AdminProducts" }, Array.Empty<string>())" asp-controller="AdminProducts" asp-action="Index" title="Sản phẩm">
+                <i class="bi bi-box-seam-fill"></i><span class="menu-text">Sản phẩm</span>
+            </a>
+            <a class="@activeClass(new[] { "Categories" }, Array.Empty<string>())" asp-controller="Categories" asp-action="Index" title="Danh mục">
+                <i class="bi bi-folder-fill"></i><span class="menu-text">Danh mục</span>
+            </a>
+            <a class="@activeClass(new[] { "Brands" }, Array.Empty<string>())" asp-controller="Brands" asp-action="Index" title="Thương hiệu">
+                <i class="bi bi-award-fill"></i><span class="menu-text">Thương hiệu</span>
+            </a>
+
+            <div class="nav-item-label menu-text">Người dùng</div>
+            <a class="@activeClass(new[] { "AdminUsers" }, Array.Empty<string>())" asp-controller="AdminUsers" asp-action="Index" title="Quản lý user">
+                <i class="bi bi-people-fill"></i><span class="menu-text">Quản lý user</span>
+            </a>
+        </nav>
+
+        <div class="admin-sidebar-footer">
+            <a asp-controller="Home" asp-action="Index" target="_blank"><i class="bi bi-globe"></i> <span class="menu-text">Xem website</span></a>
+            <a href="#"><i class="bi bi-box-arrow-right"></i> <span class="menu-text">Đăng xuất</span></a>
+        </div>
+    </aside>
+
+    <header class="admin-topbar">
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-outline-secondary" type="button" data-sidebar-toggle>
+                <i class="bi bi-list"></i>
+            </button>
+            <div class="admin-breadcrumb">@breadcrumb</div>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <button class="btn btn-sm btn-light position-relative" type="button" title="Thông báo">
+                <i class="bi bi-bell"></i>
+                <span class="topbar-badge">0</span>
+            </button>
+            <div class="vr"></div>
+            <div class="d-flex align-items-center gap-2">
+                <div class="topbar-avatar">@initials</div>
+                <span class="fw-semibold">@userName</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="admin-content">
+        @RenderBody()
+    </main>
+
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>Xác nhận xóa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    Bạn có chắc muốn xóa <strong id="deleteItemName"></strong>? Hành động này không thể hoàn tác.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <form id="deleteModalForm" method="post">
+                        <button type="submit" class="btn btn-danger">Xóa</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-toast-container"></div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/admin.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

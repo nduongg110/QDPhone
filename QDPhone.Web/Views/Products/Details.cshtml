@@ -1,0 +1,82 @@
+@{
+    ViewData["Title"] = "iPhone 15 Pro Max";
+    var demoImage = "https://picsum.photos/seed/qdphone-demo/900/900";
+}
+<nav class="small mb-3">
+    <a asp-controller="Home" asp-action="Index">Trang chủ</a> / <a asp-controller="Products" asp-action="Index">Sản phẩm</a> / <span>iPhone 15 Pro Max</span>
+</nav>
+
+<section class="row g-4">
+    <div class="col-lg-6">
+        <div class="card p-3">
+            <img id="primaryProductImage" src="@demoImage" class="img-fluid rounded" alt="iPhone 15 Pro Max" />
+            <div class="d-flex gap-2 mt-3">
+                @for (var i = 0; i < 4; i++)
+                {
+                    <img src="@demoImage" class="img-thumbnail product-thumb-mini" alt="iPhone 15 Pro Max" />
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <h1 class="h3 fw-bold">iPhone 15 Pro Max</h1>
+        <div class="text-muted mb-2">⭐ 4.8 (245 đánh giá) | Đã bán: 1,234 | Mã SP: SP1</div>
+        <div class="mb-2">
+            <span class="price-new fs-2">27.990.000 đ</span>
+            <span class="price-old ms-2">30.789.000 đ</span>
+        </div>
+        <div class="promo-box p-3 mb-3">
+            <div>✓ Tặng gói bảo hành mở rộng 12 tháng.</div>
+            <div>✓ Giảm thêm khi thanh toán online.</div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Phiên bản</label>
+            <div class="variant-selector">
+                <a href="#" class="variant-pill">8GB / 256GB / Titan tự nhiên</a>
+                <a href="#" class="variant-pill">8GB / 512GB / Titan đen</a>
+                <a href="#" class="variant-pill">8GB / 1TB / Titan trắng</a>
+            </div>
+        </div>
+
+        <div class="pdp-buy-actions">
+            <input class="form-control quantity-input" type="number" min="1" value="1" />
+            <a href="#" class="btn btn-outline-danger">THÊM VÀO GIỎ HÀNG</a>
+            <a href="#" class="btn btn-danger">MUA NGAY</a>
+        </div>
+    </div>
+</section>
+
+<section class="mt-4">
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#desc">Mô tả</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#spec">Thông số kỹ thuật</button></li>
+    </ul>
+    <div class="tab-content card border-top-0 p-3">
+        <div class="tab-pane fade show active" id="desc" style="white-space:pre-line;">
+            iPhone 15 Pro Max — flagship hiệu năng đỉnh cao, chip A17 Pro, camera tele 5x, khung Titan siêu nhẹ.
+        </div>
+        <div class="tab-pane fade" id="spec">
+            <table class="table table-striped mb-0">
+                <tbody>
+                    <tr><th>Hãng</th><td>Apple</td></tr>
+                    <tr><th>Danh mục</th><td>Điện thoại</td></tr>
+                    <tr><th>Phiên bản</th><td>8GB/256GB/Titan tự nhiên, 8GB/512GB/Titan đen, 8GB/1TB/Titan trắng</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<section class="mt-4">
+    <h2 class="section-title">Sản phẩm tương tự</h2>
+    <div class="row g-3 row-cols-2 row-cols-md-4">
+        @for (var i = 0; i < 4; i++)
+        {
+            <div class="col">
+                <partial name="_ProductCard" />
+            </div>
+        }
+    </div>
+</section>

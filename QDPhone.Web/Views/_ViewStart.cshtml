@@ -1,0 +1,17 @@
+﻿@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+    var adminControllers = new[]
+    {
+        "Admin", "AdminUsers", "AdminProducts",
+        "Brands", "Categories", "Coupons"
+    };
+    var isAuthPage = controller == "Account" && (
+        action == "Login" ||
+        action == "Register" ||
+        action == "RegisterSuccess" ||
+        action == "AccessDenied");
+    var isAdminPage = !string.IsNullOrWhiteSpace(controller) && adminControllers.Contains(controller);
+
+    Layout = isAuthPage ? "_AuthLayout" : isAdminPage ? "_AdminLayout" : "_Layout";
+}

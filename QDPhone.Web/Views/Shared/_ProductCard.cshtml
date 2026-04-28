@@ -1,0 +1,39 @@
+@{
+    var imageUrl = "https://picsum.photos/seed/qdphone-demo/640/640";
+}
+
+<div class="product-card h-100 position-relative">
+    <a asp-controller="Products" asp-action="Details" asp-route-id="1" class="text-decoration-none text-reset d-block h-100">
+        <span class="badge badge-sale position-absolute top-0 start-0 m-2">Giảm 9%</span>
+        <div class="product-thumb">
+            <img src="@imageUrl" alt="iPhone 15 Pro Max" class="img-fluid" loading="lazy" />
+        </div>
+        <div class="p-3 d-flex flex-column h-100">
+            <h6 class="product-title mb-2">iPhone 15 Pro Max</h6>
+            <div class="product-specs mb-2">
+                <span class="product-spec-pill">
+                    <span class="material-symbols-outlined icon-inline">memory</span>
+                    8GB
+                </span>
+                <span class="product-spec-pill">
+                    <span class="material-symbols-outlined icon-inline">storage</span>
+                    256GB
+                </span>
+                <span class="product-spec-pill">
+                    <span class="material-symbols-outlined icon-inline">palette</span>
+                    Titan tự nhiên
+                </span>
+            </div>
+            <div class="star-rating mb-2">★★★★★ <span class="text-muted small">(128 đánh giá)</span></div>
+            <div class="price-new">27.990.000 đ</div>
+            <div class="price-old">30.789.000 đ</div>
+            <div class="product-promo mt-2">
+                <span class="material-symbols-outlined icon-inline">local_offer</span>
+                Trả góp 0%, giảm thêm khi thanh toán online
+            </div>
+            <div class="member-price mt-2">Giá thành viên: <strong>27.150.000 đ</strong></div>
+            <div class="small text-muted mt-1">Còn 25 sản phẩm</div>
+            <span class="btn btn-danger btn-sm w-100 mt-3">Mua ngay</span>
+        </div>
+    </a>
+</div>

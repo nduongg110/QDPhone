@@ -1,0 +1,75 @@
+@{
+    ViewData["Title"] = "Quản lý đơn hàng";
+    var rows = new[]
+    {
+        (1001, "Nguyễn Văn A", "0901 234 567", "iPhone 15 Pro Max", 27_990_000m, "VIP10", "COD", "Pending", "27/04/2026", "09:24"),
+        (1002, "Trần Thị B", "0902 345 678", "Samsung Galaxy S26 Ultra", 24_990_000m, "-", "PAYOS", "Paid", "27/04/2026", "10:11"),
+        (1003, "Lê Văn C", "0903 456 789", "Xiaomi 17 Ultra", 21_990_000m, "-", "COD", "Shipping", "27/04/2026", "10:42"),
+        (1004, "Phạm Thị D", "0904 567 890", "MacBook Air M4", 32_500_000m, "STUDENT5", "PAYOS", "Done", "27/04/2026", "11:05"),
+        (1005, "Hoàng Văn E", "0905 678 901", "Redmi Note 15", 5_490_000m, "-", "COD", "Cancelled", "27/04/2026", "11:33"),
+    };
+
+    string BadgeClass(string status) => status switch
+    {
+        "Pending" => "status-pending",
+        "Paid" => "status-processing",
+        "Shipping" => "status-shipping",
+        "Done" => "status-completed",
+        _ => "status-cancelled"
+    };
+
+    string StatusText(string status) => status switch
+    {
+        "Pending" => "Chờ xử lý",
+        "Paid" => "Đã thanh toán",
+        "Shipping" => "Đang giao",
+        "Done" => "Hoàn tất",
+        _ => "Đã hủy"
+    };
+}
+<div class="page-header d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <h4 class="mb-1 fw-semibold">Quản lý đơn hàng</h4>
+        <div class="page-breadcrumb">Theo dõi và cập nhật trạng thái đơn</div>
+    </div>
+</div>
+
+<div class="admin-card">
+    <div class="table-responsive">
+        <table class="table table-hover admin-table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Mã đơn</th>
+                    <th>Khách hàng</th>
+                    <th>Sản phẩm</th>
+                    <th>Tổng tiền</th>
+                    <th>Coupon</th>
+                    <th>Thanh toán</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày đặt</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var order in rows)
+                {
+                    <tr>
+                        <td class="fw-semibold text-danger">#@order.Item1</td>
+                        <td>
+                            <div class="fw-semibold">@order.Item2</div>
+                            <div class="text-muted small">@order.Item3</div>
+                        </td>
+                        <td>@order.Item4</td>
+                        <td class="fw-semibold">@order.Item5.ToString("N0")đ</td>
+                        <td>@order.Item6</td>
+                        <td><span class="badge text-bg-light border">@order.Item7</span></td>
+                        <td><span class="badge badge-status @BadgeClass(order.Item8)">@StatusText(order.Item8)</span></td>
+                        <td>
+                            <div>@order.Item9</div>
+                            <small class="text-muted">@order.Item10</small>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

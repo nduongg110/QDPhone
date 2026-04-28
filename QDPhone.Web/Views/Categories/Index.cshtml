@@ -1,0 +1,40 @@
+@{
+    ViewData["Title"] = "Danh mục";
+    var rows = new[]
+    {
+        ("Điện thoại", "dien-thoai"),
+        ("Laptop", "laptop"),
+        ("Phụ kiện", "phu-kien"),
+        ("Đồng hồ thông minh", "dong-ho-thong-minh"),
+    };
+}
+<div class="page-header d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <h4 class="mb-1 fw-semibold">Quản lý danh mục</h4>
+        <div class="page-breadcrumb">Danh sách danh mục sản phẩm đang sử dụng</div>
+    </div>
+    <a class="btn btn-danger" href="#"><i class="bi bi-plus-circle"></i> Thêm danh mục</a>
+</div>
+<div class="admin-card">
+    <div class="table-responsive">
+        <table class="table table-hover admin-table mb-0">
+            <thead><tr><th>Tên danh mục</th><th>Slug</th><th class="text-end">Thao tác</th></tr></thead>
+            <tbody>
+            @foreach (var c in rows)
+            {
+                <tr>
+                    <td class="fw-semibold">
+                        <img src="https://picsum.photos/seed/qdphone-demo/80/80" alt="@c.Item1" style="width:40px;height:40px;object-fit:cover;border-radius:6px;" class="me-2" />
+                        @c.Item1
+                    </td>
+                    <td><code>@c.Item2</code></td>
+                    <td class="text-end">
+                        <a href="#" class="btn btn-sm btn-outline-primary">Sửa</a>
+                        <a href="#" class="btn btn-sm btn-outline-danger">Xóa</a>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

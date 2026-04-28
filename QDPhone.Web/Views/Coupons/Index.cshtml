@@ -1,0 +1,41 @@
+@{
+    ViewData["Title"] = "Mã giảm giá";
+    var rows = new[]
+    {
+        ("VIP10", "%", "10", 32, 68, "01/04/2026 - 30/04/2026", "Đang bật", "success"),
+        ("STUDENT5", "%", "5", 87, 13, "01/03/2026 - 31/05/2026", "Đang bật", "success"),
+        ("WELCOME200K", "Fixed", "200.000đ", 100, 0, "01/01/2026 - 31/03/2026", "Hết hạn", "warning"),
+    };
+}
+<div class="d-flex justify-content-between mb-3">
+    <div>
+        <h4 class="mb-1 fw-semibold">Quản lý mã giảm giá</h4>
+        <div class="page-breadcrumb">Theo dõi trạng thái và mức sử dụng coupon</div>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-danger" href="#">Tạo mã mới</a>
+    </div>
+</div>
+<div class="admin-card">
+    <table class="table table-hover admin-table mb-0">
+        <thead><tr><th>Mã</th><th>Loại</th><th>Giá trị</th><th>Đã dùng</th><th>Còn lại</th><th>Thời hạn</th><th>Trạng thái</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var c in rows)
+        {
+            <tr>
+                <td class="fw-semibold">@c.Item1</td>
+                <td>@c.Item2</td>
+                <td>@c.Item3</td>
+                <td>@c.Item4</td>
+                <td>@c.Item5</td>
+                <td>@c.Item6</td>
+                <td><span class="badge text-bg-@c.Item8">@c.Item7</span></td>
+                <td class="d-flex gap-2 justify-content-end">
+                    <a href="#" class="btn btn-sm btn-outline-primary">Sửa</a>
+                    <a href="#" class="btn btn-sm btn-outline-danger">Xóa</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
