@@ -38,7 +38,7 @@
         <div class="admin-logo-block">
             <a class="admin-brand" asp-controller="Admin" asp-action="Dashboard">
                 <i class="bi bi-lightning-charge-fill"></i>
-                <span class="menu-text">HHM Admin</span>
+                <span class="menu-text">QDPhone Admin</span>
             </a>
             <button class="btn btn-sm btn-outline-light admin-collapse-btn" type="button" data-sidebar-toggle>
                 <i class="bi bi-chevron-left"></i>
@@ -82,11 +82,6 @@
             <div class="nav-item-label menu-text">Người dùng</div>
             <a class="@activeClass(new[] { "AdminUsers" }, Array.Empty<string>())" asp-controller="AdminUsers" asp-action="Index" title="Quản lý user">
                 <i class="bi bi-people-fill"></i><span class="menu-text">Quản lý user</span>
-            </a>
-
-            <div class="nav-item-label menu-text">Nội dung</div>
-            <a class="@activeClass(new[] { "Banners" }, Array.Empty<string>())" asp-controller="Banners" asp-action="Index" title="Banner">
-                <i class="bi bi-image-fill"></i><span class="menu-text">Banner</span>
             </a>
         </nav>
 

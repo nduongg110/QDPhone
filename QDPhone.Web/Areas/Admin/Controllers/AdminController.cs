@@ -174,21 +174,37 @@ public class AdminController : Controller
             .Include(x => x.Items)
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync();
+
         var userIds = data.Select(x => x.UserId).Distinct().ToList();
+
         var userMap = await _db.Users
             .Where(x => userIds.Contains(x.Id))
             .ToDictionaryAsync(x => x.Id, x => x.FullName ?? x.UserName ?? x.Email ?? x.Id);
+
         var rows = data.Select(x => new QDPhone.Web.Models.ViewModels.OrderExportRowViewModel
         {
             OrderId = x.Id,
-            UserId = x.UserId,
             UserName = userMap.TryGetValue(x.UserId, out var name) ? name : x.UserId,
-            ProductName = x.Items.Any() ? string.Join(", ", x.Items.Select(i => i.ProductName).Distinct()) : "N/A",
+
+            ProductName = x.Items.Any()
+                ? string.Join(", ",
+                    x.Items
+                     .Where(i => !string.IsNullOrEmpty(i.ProductName))
+                     .GroupBy(i => i.ProductName)
+                     .Select(g => $"{g.Key} ({g.Sum(i => i.Quantity)})"))
+                : "N/A",
+
             Status = x.Status,
             TotalAmount = x.TotalAmount
         });
+
         var bytes = _exportService.ExportOrdersToExcel(rows);
-        return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "orders.xlsx");
+
+        return File(
+            bytes,
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "orders.xlsx"
+        );
     }
 
     [Authorize(Policy = "StaffOrAdmin")]

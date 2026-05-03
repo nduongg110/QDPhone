@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "m2G5oRUQx7o=",
+  "dgSpecHash": "Ih7jefpQGrA=",
   "success": true,
-  "projectFilePath": "C:\\Users\\duong\\Documents\\GitHub\\QDPhone\\QDPhone.Web\\QDPhone.Web.csproj",
+  "projectFilePath": "D:\\QDPhone\\QDPhone.Web\\QDPhone.Web.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\duong\\.nuget\\packages\\azure.core\\1.47.1\\azure.core.1.47.1.nupkg.sha512",
     "C:\\Users\\duong\\.nuget\\packages\\azure.identity\\1.14.2\\azure.identity.1.14.2.nupkg.sha512",

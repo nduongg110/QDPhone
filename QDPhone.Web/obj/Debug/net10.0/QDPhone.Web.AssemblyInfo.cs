@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("QDPhone.Web")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ff33a43510befa0a6d3c9286f4ab20f52543ac8f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
 [assembly: System.Reflection.AssemblyProductAttribute("QDPhone.Web")]
 [assembly: System.Reflection.AssemblyTitleAttribute("QDPhone.Web")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
