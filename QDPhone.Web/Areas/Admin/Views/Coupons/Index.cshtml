@@ -1,0 +1,136 @@
+@model QDPhone.Web.Models.ViewModels.CouponAdminIndexViewModel
+@{
+    ViewData["Title"] = "Mã giảm giá";
+    var status = Model.Status;
+}
+<div class="d-flex justify-content-between mb-3">
+    <div>
+        <h4 class="mb-1 fw-semibold">Quản lý mã giảm giá</h4>
+        <div class="page-breadcrumb">Theo dõi trạng thái và mức sử dụng coupon</div>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-danger" asp-action="Create">Tạo mã mới</a>
+    </div>
+</div>
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-info">@message</div>
+}
+<div class="d-flex flex-wrap gap-2 mb-3">
+    <a asp-action="Index" asp-route-keyword="@Model.Keyword" asp-route-expireFrom="@Model.ExpireFrom?.ToString("yyyy-MM-dd")" asp-route-expireTo="@Model.ExpireTo?.ToString("yyyy-MM-dd")" asp-route-sort="@Model.Sort" class="btn btn-sm @(string.IsNullOrWhiteSpace(status) ? "btn-dark" : "btn-outline-dark")">Tất cả</a>
+    <a asp-action="Index" asp-route-status="active" asp-route-keyword="@Model.Keyword" asp-route-expireFrom="@Model.ExpireFrom?.ToString("yyyy-MM-dd")" asp-route-expireTo="@Model.ExpireTo?.ToString("yyyy-MM-dd")" asp-route-sort="@Model.Sort" class="btn btn-sm @(status == "active" ? "btn-success" : "btn-outline-success")">Đang bật</a>
+    <a asp-action="Index" asp-route-status="expired" asp-route-keyword="@Model.Keyword" asp-route-expireFrom="@Model.ExpireFrom?.ToString("yyyy-MM-dd")" asp-route-expireTo="@Model.ExpireTo?.ToString("yyyy-MM-dd")" asp-route-sort="@Model.Sort" class="btn btn-sm @(status == "expired" ? "btn-warning" : "btn-outline-warning")">Hết hạn</a>
+    <a asp-action="Index" asp-route-status="exhausted" asp-route-keyword="@Model.Keyword" asp-route-expireFrom="@Model.ExpireFrom?.ToString("yyyy-MM-dd")" asp-route-expireTo="@Model.ExpireTo?.ToString("yyyy-MM-dd")" asp-route-sort="@Model.Sort" class="btn btn-sm @(status == "exhausted" ? "btn-danger" : "btn-outline-danger")">Hết lượt</a>
+</div>
+<form method="get" class="row g-2 mb-3">
+    <input type="hidden" name="status" value="@Model.Status" />
+    <div class="col-md-4">
+        <input class="form-control" name="keyword" value="@Model.Keyword" placeholder="Tìm theo mã coupon..." />
+    </div>
+    <div class="col-md-3">
+        <input type="date" class="form-control" name="expireFrom" value="@Model.ExpireFrom?.ToString("yyyy-MM-dd")" />
+    </div>
+    <div class="col-md-3">
+        <input type="date" class="form-control" name="expireTo" value="@Model.ExpireTo?.ToString("yyyy-MM-dd")" />
+    </div>
+    <div class="col-md-2">
+        <select class="form-select" name="sort">
+            <option value="" selected="@(string.IsNullOrWhiteSpace(Model.Sort) ? "selected" : null)">Mặc định</option>
+            <option value="code_asc" selected="@(Model.Sort == "code_asc" ? "selected" : null)">Mã A-Z</option>
+            <option value="used_desc" selected="@(Model.Sort == "used_desc" ? "selected" : null)">Đã dùng giảm dần</option>
+            <option value="expire_asc" selected="@(Model.Sort == "expire_asc" ? "selected" : null)">Sắp hết hạn</option>
+        </select>
+    </div>
+    <div class="col-md-12 d-grid d-md-flex gap-2">
+        <button class="btn btn-outline-primary">Lọc</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Xóa lọc</a>
+    </div>
+</form>
+<div class="admin-card">
+<table class="table table-hover admin-table mb-0">
+    <thead><tr><th>Mã</th><th>Loại</th><th>Giá trị</th><th>Đã dùng</th><th>Còn lại</th><th>Thời hạn</th><th>Trạng thái</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var row in Model.Rows)
+    {
+        var c = row.Coupon;
+        <tr>
+            <td>@c.Code</td>
+            <td>@(c.IsPercentage ? "%" : "Fixed")</td>
+            <td>@c.Value</td>
+            <td>@row.UsedCount</td>
+            <td>@(row.RemainingCount == int.MaxValue ? "Không giới hạn" : row.RemainingCount)</td>
+            <td>@c.StartAt.ToShortDateString() - @c.EndAt.ToShortDateString()</td>
+            <td>
+                @if (!c.IsActive)
+                {
+                    <span class="badge text-bg-secondary">Tắt</span>
+                }
+                else if (row.IsExpired)
+                {
+                    <span class="badge text-bg-warning">Hết hạn</span>
+                }
+                else if (row.IsExhausted)
+                {
+                    <span class="badge text-bg-danger">Hết lượt</span>
+                }
+                else
+                {
+                    <span class="badge text-bg-success">Đang bật</span>
+                }
+            </td>
+            <td class="d-flex gap-2 justify-content-end">
+                <a asp-action="Edit" asp-route-id="@c.Id" class="btn btn-sm btn-outline-primary">Sửa</a>
+                <form asp-action="Delete" method="post" class="js-ajax-form" data-success-message="Đã xử lý xóa mã giảm giá." data-confirm="Xóa mã này?">
+                    <input type="hidden" name="id" value="@c.Id" />
+                    <button class="btn btn-sm btn-outline-danger">Xóa</button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+</div>
+@if (Model.TotalPages > 1)
+{
+    <nav>
+        <ul class="pagination pagination-sm flex-wrap">
+            <li class="page-item @(Model.Page <= 1 ? "disabled" : null)">
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-route-status="@Model.Status"
+                   asp-route-keyword="@Model.Keyword"
+                   asp-route-expireFrom="@Model.ExpireFrom?.ToString("yyyy-MM-dd")"
+                   asp-route-expireTo="@Model.ExpireTo?.ToString("yyyy-MM-dd")"
+                       asp-route-sort="@Model.Sort"
+                   asp-route-page="@(Model.Page - 1)"
+                   asp-route-pageSize="@Model.PageSize">Trước</a>
+            </li>
+            @for (var p = 1; p <= Model.TotalPages; p++)
+            {
+                <li class="page-item @(p == Model.Page ? "active" : null)">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-status="@Model.Status"
+                       asp-route-keyword="@Model.Keyword"
+                       asp-route-expireFrom="@Model.ExpireFrom?.ToString("yyyy-MM-dd")"
+                       asp-route-expireTo="@Model.ExpireTo?.ToString("yyyy-MM-dd")"
+                       asp-route-sort="@Model.Sort"
+                       asp-route-page="@p"
+                       asp-route-pageSize="@Model.PageSize">@p</a>
+                </li>
+            }
+            <li class="page-item @(Model.Page >= Model.TotalPages ? "disabled" : null)">
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-route-status="@Model.Status"
+                   asp-route-keyword="@Model.Keyword"
+                   asp-route-expireFrom="@Model.ExpireFrom?.ToString("yyyy-MM-dd")"
+                   asp-route-expireTo="@Model.ExpireTo?.ToString("yyyy-MM-dd")"
+                   asp-route-sort="@Model.Sort"
+                   asp-route-page="@(Model.Page + 1)"
+                   asp-route-pageSize="@Model.PageSize">Sau</a>
+            </li>
+        </ul>
+    </nav>
+}
+

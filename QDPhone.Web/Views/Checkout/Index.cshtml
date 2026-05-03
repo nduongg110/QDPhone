@@ -1,0 +1,65 @@
+@model QDPhone.Web.Models.ViewModels.CartViewModel
+@{
+    ViewData["Title"] = "Thanh toán";
+}
+<h2 class="mb-3">Thanh toán</h2>
+@if (TempData["Message"] is string message)
+{
+    <div class="alert alert-info">@message</div>
+}
+@{
+    var appliedCode = ViewBag.AppliedCouponCode as string;
+    var appliedDiscount = ViewBag.AppliedCouponDiscount as decimal?;
+    var appliedFinalTotal = ViewBag.AppliedFinalTotal as decimal?;
+    var appliedCouponMessage = ViewBag.AppliedCouponMessage as string;
+}
+@if (!string.IsNullOrWhiteSpace(appliedCouponMessage))
+{
+    <div class="alert alert-success">@appliedCouponMessage</div>
+}
+@if (!string.IsNullOrWhiteSpace(appliedCode) && appliedDiscount.HasValue && appliedFinalTotal.HasValue)
+{
+    <div class="alert alert-warning d-flex flex-wrap gap-3 justify-content-between">
+        <span>Mã đã áp dụng: <strong>@appliedCode</strong></span>
+        <span>Giảm: <strong>-@appliedDiscount.Value.ToString("N0") đ</strong></span>
+        <span>Tổng sau giảm: <strong class="text-danger">@appliedFinalTotal.Value.ToString("N0") đ</strong></span>
+    </div>
+}
+<div class="row g-3">
+    <div class="col-12 col-lg-6">
+        <form asp-action="PlaceCod" method="post" class="card p-3">
+            <h5 class="mb-3">Thanh toán COD</h5>
+            <div class="mb-3">
+                <label class="form-label">Tạm tính giỏ hàng</label>
+                <input class="form-control" value="@Model.SubTotal.ToString("N0") đ" readonly />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Mã khuyến mãi</label>
+                <div class="input-group">
+                    <input class="form-control" name="couponCode" value="@appliedCode" placeholder="Nhập mã ví dụ: WELCOME10" />
+                    <button type="submit" class="btn btn-outline-primary" asp-action="ApplyCoupon" formmethod="post">Áp dụng mã</button>
+                </div>
+                <small class="text-muted">Mã sẽ được kiểm tra điều kiện đơn tối thiểu, thời gian và số lượt dùng.</small>
+            </div>
+            <button type="submit" class="btn btn-danger">Đặt hàng COD</button>
+        </form>
+    </div>
+    <div class="col-12 col-lg-6">
+        <form asp-action="CreatePayOs" method="post" class="card p-3">
+            <h5 class="mb-3">Thanh toán qua PayOS</h5>
+            <div class="mb-3">
+                <label class="form-label">Tạm tính giỏ hàng</label>
+                <input class="form-control" value="@Model.SubTotal.ToString("N0") đ" readonly />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Mã khuyến mãi</label>
+                <div class="input-group">
+                    <input class="form-control" name="couponCode" value="@appliedCode" placeholder="Nhập mã ví dụ: WELCOME10" />
+                    <button type="submit" class="btn btn-outline-primary" asp-action="ApplyCoupon" formmethod="post">Áp dụng mã</button>
+                </div>
+                <small class="text-muted">Mã chỉ bị trừ lượt khi thanh toán thành công.</small>
+            </div>
+            <button type="submit" class="btn btn-outline-primary">Thanh toán qua PayOS</button>
+        </form>
+    </div>
+</div>

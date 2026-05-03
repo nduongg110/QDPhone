@@ -1,0 +1,66 @@
+@model QDPhone.Web.Models.Entities.Coupon
+@{
+    ViewData["Title"] = "Sửa mã giảm giá";
+}
+<div class="page-header mb-4">
+    <h4 class="mb-1 fw-semibold">Chỉnh sửa mã: @Model.Code</h4>
+    <div class="page-breadcrumb">Cập nhật cấu hình khuyến mãi</div>
+</div>
+<form method="post" class="admin-card d-grid gap-2" style="max-width:760px;">
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div>
+        <label class="form-label">Mã</label>
+        <input class="form-control" asp-for="Code" />
+        <span asp-validation-for="Code" class="text-danger small"></span>
+    </div>
+    <div>
+        <label class="form-label">Giá trị</label>
+        <input type="number" class="form-control" asp-for="Value" step="0.01" />
+        <span asp-validation-for="Value" class="text-danger small"></span>
+    </div>
+    <div class="form-check">
+        <input class="form-check-input" asp-for="IsPercentage" />
+        <label class="form-check-label" asp-for="IsPercentage">Giảm theo %</label>
+        <span asp-validation-for="IsPercentage" class="text-danger small d-block"></span>
+    </div>
+    <div>
+        <label class="form-label">Giảm tối đa</label>
+        <input type="number" class="form-control" asp-for="MaxDiscount" step="0.01" />
+        <span asp-validation-for="MaxDiscount" class="text-danger small"></span>
+    </div>
+    <div>
+        <label class="form-label">Đơn tối thiểu</label>
+        <input type="number" class="form-control" asp-for="MinOrderAmount" step="0.01" />
+        <span asp-validation-for="MinOrderAmount" class="text-danger small"></span>
+    </div>
+    <div>
+        <label class="form-label">Giới hạn lượt dùng</label>
+        <input type="number" class="form-control" asp-for="UsageLimit" />
+        <span asp-validation-for="UsageLimit" class="text-danger small"></span>
+    </div>
+    <div>
+        <label class="form-label">Giới hạn theo người dùng</label>
+        <input type="number" class="form-control" asp-for="UsagePerUserLimit" />
+        <span asp-validation-for="UsagePerUserLimit" class="text-danger small"></span>
+    </div>
+    <div>
+        <label class="form-label">Bắt đầu</label>
+        <input type="datetime-local" class="form-control" asp-for="StartAt" />
+        <span asp-validation-for="StartAt" class="text-danger small"></span>
+    </div>
+    <div>
+        <label class="form-label">Kết thúc</label>
+        <input type="datetime-local" class="form-control" asp-for="EndAt" />
+        <span asp-validation-for="EndAt" class="text-danger small"></span>
+    </div>
+    <div class="form-check">
+        <input class="form-check-input" asp-for="IsActive" />
+        <label class="form-check-label" asp-for="IsActive">Kích hoạt</label>
+    </div>
+    <div class="d-flex gap-2 mt-2 justify-content-end">
+        <button class="btn btn-danger">Lưu thay đổi</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Quay lại</a>
+    </div>
+</form>
+

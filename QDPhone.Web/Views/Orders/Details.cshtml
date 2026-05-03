@@ -1,0 +1,51 @@
+@model QDPhone.Web.Models.Entities.Order
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+}
+<h3>Đơn hàng #@Model.Id</h3>
+<ul>
+    <li>Trạng thái: @DisplayTextHelper.OrderStatus(Model.Status)</li>
+    <li>Phương thức thanh toán: @DisplayTextHelper.PaymentMethod(Model.PaymentMethod)</li>
+    <li>Mã giảm giá: @(string.IsNullOrWhiteSpace(Model.CouponCode) ? "-" : Model.CouponCode)</li>
+    <li>Giảm giá: @(Model.DiscountAmount > 0 ? $"-{Model.DiscountAmount:N0} VND" : "-")</li>
+    <li>Tổng tiền: @Model.TotalAmount.ToString("N0") VND</li>
+    <li>Ngày tạo: @Model.CreatedAt.ToLocalTime()</li>
+</ul>
+
+@if (Model.Items.Any())
+{
+    <h5>Sản phẩm trong đơn</h5>
+    <div class="table-responsive">
+        <table class="table table-sm table-striped">
+            <thead>
+                <tr>
+                    <th>Sản phẩm</th>
+                    <th>Phiên bản</th>
+                    <th>Đơn giá</th>
+                    <th>SL</th>
+                    <th>Thành tiền</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    <tr>
+                        <td>@item.ProductName</td>
+                        <td>@item.VariantLabel</td>
+                        <td>@item.UnitPrice.ToString("N0")</td>
+                        <td>@item.Quantity</td>
+                        <td>@(item.UnitPrice * item.Quantity).ToString("N0")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if (Model.PaymentMethod == "PAYOS" && Model.Status is "PendingPayment" or "PaymentFailed")
+{
+    <form asp-action="RetryPayment" method="post">
+        <input type="hidden" name="orderId" value="@Model.Id" />
+        <button class="btn btn-outline-primary">Thanh toán lại</button>
+    </form>
+}

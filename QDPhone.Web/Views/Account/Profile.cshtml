@@ -1,0 +1,51 @@
+@model QDPhone.Web.Models.ViewModels.ProfileViewModel
+@{
+    ViewData["Title"] = "Thông tin cá nhân";
+}
+<section class="profile-page">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h2 class="mb-0">Thông tin cá nhân</h2>
+        <a class="btn btn-outline-secondary btn-sm" asp-action="ChangePassword">Đổi mật khẩu</a>
+    </div>
+
+    @if (TempData["Message"] is string message)
+    {
+        <div class="alert alert-success">@message</div>
+    }
+
+    <div class="card p-3 p-lg-4">
+        <form method="post" enctype="multipart/form-data" class="row g-3 align-items-start">
+            <div class="col-12 col-lg-4">
+                <div class="profile-avatar-panel">
+                    <img src="@(string.IsNullOrWhiteSpace(Model.AvatarUrl) ? "https://picsum.photos/seed/qdphone-avatar/200/200" : Model.AvatarUrl)"
+                         alt="Avatar"
+                         class="profile-avatar-preview" />
+                    <label class="form-label fw-semibold mt-3">Ảnh đại diện</label>
+                    <input type="file" name="avatar" class="form-control" />
+                    <div class="small text-muted mt-1">Hỗ trợ JPG, PNG, WEBP. Tối đa 2MB.</div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-8">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Họ tên</label>
+                        <input asp-for="FullName" class="form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Số điện thoại</label>
+                        <input asp-for="PhoneNumber" class="form-control" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Địa chỉ</label>
+                        <input asp-for="Address" class="form-control" />
+                    </div>
+                    <div class="col-12 d-flex gap-2 pt-1">
+                        <button class="btn btn-danger" type="submit">Lưu thông tin</button>
+                        <a class="btn btn-outline-secondary" asp-controller="Orders" asp-action="MyOrders">Đơn hàng của tôi</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>

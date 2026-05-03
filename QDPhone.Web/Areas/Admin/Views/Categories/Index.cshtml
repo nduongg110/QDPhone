@@ -1,0 +1,38 @@
+@model IEnumerable<QDPhone.Web.Models.Entities.Category>
+@{
+    ViewData["Title"] = "Danh mục";
+}
+<div class="page-header d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <h4 class="mb-1 fw-semibold">Quản lý danh mục</h4>
+        <div class="page-breadcrumb">Danh sách danh mục sản phẩm đang sử dụng</div>
+    </div>
+    <a class="btn btn-danger" asp-action="Create"><i class="bi bi-plus-circle"></i> Thêm danh mục</a>
+</div>
+<div class="admin-card">
+    <div class="table-responsive">
+        <table class="table table-hover admin-table mb-0">
+            <thead><tr><th>Tên danh mục</th><th>Slug</th><th class="text-end">Thao tác</th></tr></thead>
+            <tbody>
+            @foreach (var c in Model)
+            {
+                <tr>
+                    <td class="fw-semibold">
+                        <img src="@(string.IsNullOrWhiteSpace(c.ImageUrl) ? "https://via.placeholder.com/40x40?text=Cat" : c.ImageUrl)" alt="@c.Name" style="width:40px;height:40px;object-fit:cover;border-radius:6px;" class="me-2" />
+                        @c.Name
+                    </td>
+                    <td><code>@c.Slug</code></td>
+                    <td class="text-end">
+                        <a asp-action="Edit" asp-route-id="@c.Id" class="btn btn-sm btn-outline-primary">Sửa</a>
+                        <form asp-action="Delete" method="post" class="d-inline js-ajax-form" data-success-message="Đã xóa danh mục." data-confirm="Xóa danh mục này?" data-reload="row">
+                            <input type="hidden" name="id" value="@c.Id" />
+                            <button class="btn btn-sm btn-outline-danger">Xóa</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+

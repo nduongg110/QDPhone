@@ -25,7 +25,9 @@
             <label class="mb-0">
                 <input asp-for="RememberMe" /> Ghi nhớ đăng nhập
             </label>
-            <a asp-action="ForgotPassword" class="text-danger">Quên mật khẩu?</a>
+            <a href="#" class="text-danger" onclick="alert('Chức năng này hiện chưa hỗ trợ'); return false;">
+                Quên mật khẩu?
+            </a>
         </div>
         <button class="btn btn-danger w-100" type="submit">ĐĂNG NHẬP</button>
     </form>

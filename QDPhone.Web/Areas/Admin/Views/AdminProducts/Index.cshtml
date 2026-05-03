@@ -1,0 +1,114 @@
+@model IEnumerable<QDPhone.Web.Models.Entities.Product>
+@{
+    ViewData["Title"] = "Quản lý sản phẩm";
+    var categories = ViewBag.Categories as IEnumerable<QDPhone.Web.Models.Entities.Category> ?? Enumerable.Empty<QDPhone.Web.Models.Entities.Category>();
+    var brands = ViewBag.Brands as IEnumerable<QDPhone.Web.Models.Entities.Brand> ?? Enumerable.Empty<QDPhone.Web.Models.Entities.Brand>();
+    var osList = ViewBag.OsList as IEnumerable<string> ?? Enumerable.Empty<string>();
+    string? q = ViewBag.Keyword as string;
+    int? categoryId = ViewBag.CategoryId as int?;
+    int? brandId = ViewBag.BrandId as int?;
+    string? os = ViewBag.Os as string;
+    string? stock = ViewBag.Stock as string;
+    string? sort = ViewBag.Sort as string;
+}
+<div class="page-header d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <h4 class="mb-1 fw-semibold">Quản lý sản phẩm</h4>
+        <div class="page-breadcrumb">Danh sách sản phẩm và thông tin hiển thị</div>
+    </div>
+    <a class="btn btn-danger" asp-action="Create"><i class="bi bi-plus-circle"></i> Thêm sản phẩm</a>
+</div>
+
+<div class="admin-card">
+    <form method="get" class="row g-2 mb-3">
+        <div class="col-md-3">
+            <input class="form-control" name="q" value="@q" placeholder="Tìm tên/slug sản phẩm..." />
+        </div>
+        <div class="col-md-2">
+            <select class="form-select" name="categoryId">
+                <option value="">Tất cả danh mục</option>
+                @foreach (var c in categories)
+                {
+                    <option value="@c.Id" selected="@(categoryId == c.Id ? "selected" : null)">@c.Name</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select class="form-select" name="brandId">
+                <option value="">Tất cả thương hiệu</option>
+                @foreach (var b in brands)
+                {
+                    <option value="@b.Id" selected="@(brandId == b.Id ? "selected" : null)">@b.Name</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select class="form-select" name="os">
+                <option value="">Tất cả OS</option>
+                @foreach (var item in osList)
+                {
+                    <option value="@item" selected="@(os == item ? "selected" : null)">@item</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-1">
+            <select class="form-select" name="stock">
+                <option value="">Kho</option>
+                <option value="in" selected="@(stock == "in" ? "selected" : null)">Còn</option>
+                <option value="low" selected="@(stock == "low" ? "selected" : null)">Sắp hết</option>
+                <option value="out" selected="@(stock == "out" ? "selected" : null)">Hết</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select class="form-select" name="sort">
+                <option value="">Mới nhất</option>
+                <option value="name_asc" selected="@(sort == "name_asc" ? "selected" : null)">Tên A-Z</option>
+                <option value="name_desc" selected="@(sort == "name_desc" ? "selected" : null)">Tên Z-A</option>
+                <option value="stock_desc" selected="@(sort == "stock_desc" ? "selected" : null)">Kho giảm dần</option>
+                <option value="stock_asc" selected="@(sort == "stock_asc" ? "selected" : null)">Kho tăng dần</option>
+            </select>
+        </div>
+        <div class="col-12 d-grid d-md-flex gap-2">
+            <button class="btn btn-outline-primary">Lọc</button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Xóa lọc</a>
+        </div>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table table-hover admin-table align-middle mb-0">
+            <thead><tr><th>Sản phẩm</th><th>SKU/OS</th><th>Danh mục</th><th>Thương hiệu</th><th>Kho</th><th>Ảnh</th><th class="text-end">Thao tác</th></tr></thead>
+            <tbody>
+            @foreach (var p in Model)
+            {
+                var firstVariant = p.Variants.OrderByDescending(x => x.Price).FirstOrDefault();
+                var totalStock = p.Variants.Sum(x => x.StockQuantity);
+                <tr>
+                    <td>
+                        <img src="@(p.Images.OrderByDescending(i => i.IsPrimary).ThenBy(i => i.SortOrder).Select(i => i.ImageUrl).FirstOrDefault() ?? "https://via.placeholder.com/56x56?text=SP")" alt="@p.Name" style="width:56px;height:56px;object-fit:cover;border-radius:6px;" class="me-2" />
+                        <div class="fw-semibold">@p.Name</div>
+                        <div class="small text-muted text-truncate" style="max-width:260px;">@(p.Description ?? "-")</div>
+                    </td>
+                    <td><span class="text-muted small">@p.Slug</span><br /><span>@p.OperatingSystem</span></td>
+                    <td><span class="badge text-bg-light border">@p.Category?.Name</span></td>
+                    <td><span class="badge text-bg-light border">@p.Brand?.Name</span></td>
+                    <td>
+                        <span class="@(totalStock < 5 ? "text-danger fw-semibold" : "fw-semibold")">@totalStock</span>
+                        @if (firstVariant != null) { <div class="small text-muted">@firstVariant.Price.ToString("N0")đ</div> }
+                    </td>
+                    <td><span class="badge text-bg-secondary">@p.Images.Count ảnh</span></td>
+                    <td class="text-end">
+                        <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i> Sửa</a>
+                        <a asp-action="Variants" asp-route-productId="@p.Id" class="btn btn-sm btn-outline-dark"><i class="bi bi-diagram-3"></i> Biến thể</a>
+                        <a asp-action="Images" asp-route-productId="@p.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-images"></i> Ảnh</a>
+                        <form asp-action="Delete" method="post" class="d-inline js-ajax-form" data-success-message="Đã xóa sản phẩm." data-confirm="Xóa sản phẩm này?" data-reload="row">
+                            <input type="hidden" name="id" value="@p.Id" />
+                            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Xóa</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+

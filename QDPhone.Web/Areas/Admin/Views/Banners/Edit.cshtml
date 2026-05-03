@@ -1,0 +1,21 @@
+@model QDPhone.Web.Models.Entities.Banner
+@{
+    ViewData["Title"] = "Sửa banner";
+}
+<div class="page-header mb-4">
+    <h4 class="mb-1 fw-semibold">Sửa banner</h4>
+    <div class="page-breadcrumb">Cập nhật thông tin banner đang hiển thị</div>
+</div>
+<form method="post" enctype="multipart/form-data" class="admin-card" style="max-width:720px;">
+    <input type="hidden" asp-for="Id" />
+    <div class="mb-3"><label class="form-label">Tiêu đề</label><input asp-for="Title" class="form-control" /></div>
+    <div class="mb-3"><label class="form-label">URL ảnh</label><input asp-for="ImageUrl" class="form-control" /></div>
+    <div class="mb-3"><label class="form-label">Upload ảnh mới</label><input type="file" name="imageFile" class="form-control" accept="image/*" /></div>
+    <div class="mb-3"><label class="form-label">Link</label><input asp-for="LinkUrl" class="form-control" /></div>
+    <div class="form-check form-switch mb-3"><input class="form-check-input" asp-for="IsActive" /><label class="form-check-label" asp-for="IsActive">Kích hoạt</label></div>
+    <div class="d-flex justify-content-end gap-2">
+        <a asp-action="Index" class="btn btn-outline-secondary">Hủy</a>
+        <button class="btn btn-danger">Lưu thay đổi</button>
+    </div>
+</form>
+

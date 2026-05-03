@@ -1,0 +1,152 @@
+@model QDPhone.Web.Models.ViewModels.AdminOrderIndexViewModel
+@{
+    ViewData["Title"] = "Quản lý đơn hàng";
+}
+<div class="page-header d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <h4 class="mb-1 fw-semibold">Quản lý đơn hàng</h4>
+        <div class="page-breadcrumb">Theo dõi và cập nhật trạng thái đơn</div>
+    </div>
+    <a class="btn btn-outline-secondary btn-sm" asp-action="ExportOrders">Xuất Excel</a>
+</div>
+
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item"><a class="nav-link @(string.IsNullOrWhiteSpace(Model.Status) ? "active text-danger" : null)" asp-action="Orders">Tất cả (@Model.StatusCounts.All)</a></li>
+    <li class="nav-item"><a class="nav-link @(Model.Status == "pending" ? "active text-danger" : null)" asp-action="Orders" asp-route-status="pending">Chờ xác nhận (@Model.StatusCounts.Pending)</a></li>
+    <li class="nav-item"><a class="nav-link @(Model.Status == "processing" ? "active text-danger" : null)" asp-action="Orders" asp-route-status="processing">Đang xử lý (@Model.StatusCounts.Processing)</a></li>
+    <li class="nav-item"><a class="nav-link @(Model.Status == "shipping" ? "active text-danger" : null)" asp-action="Orders" asp-route-status="shipping">Đang giao (@Model.StatusCounts.Shipping)</a></li>
+    <li class="nav-item"><a class="nav-link @(Model.Status == "completed" ? "active text-danger" : null)" asp-action="Orders" asp-route-status="completed">Hoàn thành (@Model.StatusCounts.Completed)</a></li>
+    <li class="nav-item"><a class="nav-link @(Model.Status == "cancelled" ? "active text-danger" : null)" asp-action="Orders" asp-route-status="cancelled">Đã hủy (@Model.StatusCounts.Cancelled)</a></li>
+</ul>
+
+<form method="get" class="admin-card mb-3">
+    <input type="hidden" name="status" value="@Model.Status" />
+    <div class="row g-2 align-items-end">
+        <div class="col-md-2">
+            <label class="form-label">Thanh toán</label>
+            <select class="form-select" name="paymentMethod">
+                <option value="" selected="@(string.IsNullOrWhiteSpace(Model.PaymentMethod) ? "selected" : null)">Tất cả</option>
+                <option value="COD" selected="@(Model.PaymentMethod == "COD" ? "selected" : null)">COD</option>
+                <option value="PAYOS" selected="@(Model.PaymentMethod == "PAYOS" ? "selected" : null)">Ví điện tử</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Từ ngày</label>
+            <input type="date" class="form-control" name="fromDate" value="@Model.FromDate?.ToString("yyyy-MM-dd")" />
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Đến ngày</label>
+            <input type="date" class="form-control" name="toDate" value="@Model.ToDate?.ToString("yyyy-MM-dd")" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Tìm kiếm</label>
+            <input class="form-control" name="q" value="@Model.Q" placeholder="Mã đơn, ID user..." />
+        </div>
+        <div class="col-md-2 d-grid d-md-flex gap-2">
+            <button class="btn btn-danger">Lọc</button>
+            <a asp-action="Orders" asp-route-status="@Model.Status" class="btn btn-outline-secondary">Xóa lọc</a>
+        </div>
+    </div>
+</form>
+
+<div class="admin-card">
+    <div class="table-responsive">
+        <table class="table table-hover admin-table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Mã đơn</th>
+                    <th>Khách hàng</th>
+                    <th>Sản phẩm</th>
+                    <th>Tổng tiền</th>
+                    <th>Coupon</th>
+                    <th>Thanh toán</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày đặt</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Model.Rows)
+                {
+                    var badgeClass = order.Status switch
+                    {
+                        "Pending" or "PendingPayment" => "status-pending",
+                        "Paid" => "status-processing",
+                        "Shipping" => "status-shipping",
+                        "Done" => "status-completed",
+                        _ => "status-cancelled"
+                    };
+                    <tr>
+                        <td class="fw-semibold text-danger">#@order.Id</td>
+                        <td>
+                            <div class="fw-semibold">@order.CustomerName</div>
+                            <div class="text-muted small">@order.PhoneNumber</div>
+                        </td>
+                        <td>
+                            @order.FirstProductName
+                            @if (order.MoreProductCount > 0)
+                            {
+                                <span class="text-muted small">(+@order.MoreProductCount SP)</span>
+                            }
+                        </td>
+                        <td class="fw-semibold">
+                            @order.TotalAmount.ToString("N0")đ
+                            @if (order.DiscountAmount > 0)
+                            {
+                                <div class="small text-success">Giảm -@order.DiscountAmount.ToString("N0")đ</div>
+                            }
+                        </td>
+                        <td>
+                            @(string.IsNullOrWhiteSpace(order.CouponCode) ? "-" : order.CouponCode)
+                        </td>
+                        <td><span class="badge text-bg-light border">@order.PaymentMethod</span></td>
+                        <td><span class="badge badge-status @badgeClass js-order-status-badge">@DisplayTextHelper.OrderStatus(order.Status)</span></td>
+                        <td>
+                            <div>@order.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</div>
+                            <small class="text-muted">@order.CreatedAt.ToLocalTime().ToString("HH:mm")</small>
+                        </td>
+                        <td>
+                            <form asp-action="UpdateOrderStatus" method="post" class="d-flex gap-1 js-ajax-form" data-success-message="Đã cập nhật trạng thái đơn hàng." data-reload="none" data-update="order-status">
+                                <input type="hidden" name="orderId" value="@order.Id" />
+                                <select name="status" class="form-select form-select-sm">
+                                    <option value="Pending" selected="@(order.Status == "Pending" ? "selected" : null)">Chờ xử lý</option>
+                                    <option value="PendingPayment" selected="@(order.Status == "PendingPayment" ? "selected" : null)">Chờ thanh toán</option>
+                                    <option value="Paid" selected="@(order.Status == "Paid" ? "selected" : null)">Đã thanh toán</option>
+                                    <option value="Shipping" selected="@(order.Status == "Shipping" ? "selected" : null)">Đang giao</option>
+                                    <option value="Done" selected="@(order.Status == "Done" ? "selected" : null)">Hoàn tất</option>
+                                    <option value="Cancelled" selected="@(order.Status == "Cancelled" ? "selected" : null)">Đã hủy</option>
+                                    <option value="PaymentFailed" selected="@(order.Status == "PaymentFailed" ? "selected" : null)">TT thất bại</option>
+                                </select>
+                                <button class="btn btn-sm btn-outline-dark">Lưu</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@if (Model.TotalPages > 1)
+{
+    <div class="d-flex justify-content-between align-items-center mt-3">
+        <div class="text-muted small">
+            Hiển thị @((Model.Page - 1) * Model.PageSize + 1)-@Math.Min(Model.Page * Model.PageSize, Model.TotalItems) trong @Model.TotalItems đơn hàng
+        </div>
+        <ul class="pagination pagination-sm mb-0">
+            <li class="page-item @(Model.Page <= 1 ? "disabled" : null)">
+                <a class="page-link" asp-action="Orders" asp-route-status="@Model.Status" asp-route-paymentMethod="@Model.PaymentMethod" asp-route-fromDate="@Model.FromDate?.ToString("yyyy-MM-dd")" asp-route-toDate="@Model.ToDate?.ToString("yyyy-MM-dd")" asp-route-q="@Model.Q" asp-route-page="@(Model.Page - 1)" asp-route-pageSize="@Model.PageSize">Trước</a>
+            </li>
+            @for (var p = 1; p <= Model.TotalPages; p++)
+            {
+                <li class="page-item @(p == Model.Page ? "active" : null)">
+                    <a class="page-link" asp-action="Orders" asp-route-status="@Model.Status" asp-route-paymentMethod="@Model.PaymentMethod" asp-route-fromDate="@Model.FromDate?.ToString("yyyy-MM-dd")" asp-route-toDate="@Model.ToDate?.ToString("yyyy-MM-dd")" asp-route-q="@Model.Q" asp-route-page="@p" asp-route-pageSize="@Model.PageSize">@p</a>
+                </li>
+            }
+            <li class="page-item @(Model.Page >= Model.TotalPages ? "disabled" : null)">
+                <a class="page-link" asp-action="Orders" asp-route-status="@Model.Status" asp-route-paymentMethod="@Model.PaymentMethod" asp-route-fromDate="@Model.FromDate?.ToString("yyyy-MM-dd")" asp-route-toDate="@Model.ToDate?.ToString("yyyy-MM-dd")" asp-route-q="@Model.Q" asp-route-page="@(Model.Page + 1)" asp-route-pageSize="@Model.PageSize">Sau</a>
+            </li>
+        </ul>
+    </div>
+}
+

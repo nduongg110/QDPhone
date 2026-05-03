@@ -83,11 +83,18 @@
             <a class="@activeClass(new[] { "AdminUsers" }, Array.Empty<string>())" asp-controller="AdminUsers" asp-action="Index" title="Quản lý user">
                 <i class="bi bi-people-fill"></i><span class="menu-text">Quản lý user</span>
             </a>
+
+            <div class="nav-item-label menu-text">Nội dung</div>
+            <a class="@activeClass(new[] { "Banners" }, Array.Empty<string>())" asp-controller="Banners" asp-action="Index" title="Banner">
+                <i class="bi bi-image-fill"></i><span class="menu-text">Banner</span>
+            </a>
         </nav>
 
         <div class="admin-sidebar-footer">
             <a asp-controller="Home" asp-action="Index" target="_blank"><i class="bi bi-globe"></i> <span class="menu-text">Xem website</span></a>
-            <a href="#"><i class="bi bi-box-arrow-right"></i> <span class="menu-text">Đăng xuất</span></a>
+            <form asp-controller="Account" asp-action="Logout" method="post">
+                <button type="submit" class="btn btn-link p-0"><i class="bi bi-box-arrow-right"></i> <span class="menu-text">Đăng xuất</span></button>
+            </form>
         </div>
     </aside>
 

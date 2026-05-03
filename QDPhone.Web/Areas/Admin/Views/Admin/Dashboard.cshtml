@@ -1,0 +1,227 @@
+@model QDPhone.Web.Models.ViewModels.AdminDashboardViewModel
+@using System.Text.Json
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="page-header d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <h4 class="mb-1 fw-semibold">Dashboard</h4>
+        <div class="page-breadcrumb">Tổng quan hiệu suất bán hàng</div>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary btn-sm" asp-action="ExportOrders">Xuất Excel</a>
+        <a class="btn btn-danger btn-sm" asp-action="Orders">Đến quản lý đơn hàng</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-3 col-sm-6">
+        <div class="admin-card border-start border-4 border-success">
+            <div class="text-muted small">Doanh thu hôm nay</div>
+            <div class="h4 mb-1">@Model.TodayRevenue.ToString("N0")đ</div>
+            <div class="small @(Model.RevenueChangePercent >= 0 ? "text-success" : "text-danger")">
+                @(Model.RevenueChangePercent >= 0 ? "↑" : "↓") @Math.Abs(Model.RevenueChangePercent)% so với hôm qua
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="admin-card border-start border-4 border-warning">
+            <div class="text-muted small">Đơn hàng mới</div>
+            <div class="h4 mb-1">@Model.NewOrdersCount</div>
+            <div class="small text-muted">@Model.PendingOrdersCount đơn chờ xử lý</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="admin-card border-start border-4" style="border-color:#6f42c1!important;">
+            <div class="text-muted small">Khách hàng mới</div>
+            <div class="h4 mb-1">@Model.NewUsersToday</div>
+            <div class="small text-muted">Tổng: @Model.TotalUsers khách</div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="admin-card border-start border-4 border-danger">
+            <div class="text-muted small">Sắp hết hàng</div>
+            <div class="h4 mb-1 @(Model.LowStockCount > 0 ? "text-danger" : null)">@Model.LowStockCount</div>
+            <div class="small"><a asp-controller="AdminProducts" asp-action="Index" class="text-danger text-decoration-none">Xem chi tiết →</a></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-7">
+        <div class="admin-card">
+            <h6 class="mb-3">Doanh thu 30 ngày qua</h6>
+            <div class="admin-chart-wrap">
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="admin-card">
+            <h6 class="mb-3">Trạng thái đơn hàng</h6>
+            <div class="admin-chart-wrap admin-chart-wrap-sm">
+                <canvas id="statusChart"></canvas>
+            </div>
+            <div class="text-center text-muted mt-2">Tổng @Model.TotalOrders đơn</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-6">
+        <div class="admin-card h-100">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="mb-0">Đơn hàng gần đây</h6>
+                <a asp-action="Orders" class="small text-decoration-none">Xem tất cả →</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Tổng</th><th>Trạng thái</th><th>Thời gian</th></tr></thead>
+                    <tbody>
+                    @foreach (var x in Model.RecentOrders)
+                    {
+                        <tr>
+                            <td><a asp-action="Orders" class="text-danger text-decoration-none fw-semibold">#@x.Id</a></td>
+                            <td>@x.CustomerName</td>
+                            <td>@x.TotalAmount.ToString("N0")đ</td>
+                            <td><span class="badge text-bg-light border">@x.Status</span></td>
+                            <td class="text-muted">@x.CreatedAt.ToLocalTime().ToString("dd/MM HH:mm")</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="admin-card h-100">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="mb-0">Top sản phẩm</h6>
+                <span class="badge text-bg-light">7 ngày qua</span>
+            </div>
+            @if (Model.TopProducts.Any())
+            {
+                var top = Model.TopProducts.Max(x => x.SoldQuantity);
+                foreach (var p in Model.TopProducts.Select((item, index) => new { item, index }))
+                {
+                    var percent = top > 0 ? (int)Math.Round((double)p.item.SoldQuantity / top * 100) : 0;
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <strong style="width:24px;">#@(p.index + 1)</strong>
+                        <img src="@p.item.ImageUrl" alt="@p.item.ProductName" style="width:36px;height:36px;object-fit:cover;border-radius:6px;" />
+                        <div class="flex-grow-1">
+                            <div class="small fw-semibold text-truncate">@p.item.ProductName</div>
+                            <div class="progress" style="height:4px;"><div class="progress-bar bg-danger" style="width:@percent%"></div></div>
+                        </div>
+                        <div class="text-end small">
+                            <div>@p.item.SoldQuantity đã bán</div>
+                            <div class="text-muted">@p.item.Revenue.ToString("N0")đ</div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-muted">Chưa có dữ liệu bán hàng 7 ngày gần đây.</div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="admin-card">
+            <h6 class="mb-3">Hoạt động gần đây</h6>
+            @foreach (var a in Model.Activities)
+            {
+                <div class="d-flex align-items-start gap-2 mb-2">
+                    <span class="badge rounded-pill text-bg-light border">@a.Type</span>
+                    <div>
+                        <div>@a.Content</div>
+                        <small class="text-muted">@a.At.ToLocalTime().ToString("dd/MM HH:mm")</small>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="admin-card">
+            <h6 class="mb-3">Quick stats</h6>
+            <div class="d-flex justify-content-between mb-2"><span>Tổng sản phẩm</span><strong>@Model.TotalProducts</strong></div>
+            <div class="d-flex justify-content-between mb-2"><span>Danh mục</span><strong>@Model.TotalCategories</strong></div>
+            <div class="d-flex justify-content-between mb-2"><span>Thương hiệu</span><strong>@Model.TotalBrands</strong></div>
+            <div class="d-flex justify-content-between mb-2"><span>Tổng đánh giá</span><strong>@Model.PendingReviews</strong></div>
+            <div class="d-flex justify-content-between mb-2"><span>Coupon đang chạy</span><strong>@Model.ActiveCoupons</strong></div>
+            <div class="d-flex justify-content-between"><span>Banner đang hiển thị</span><strong>@Model.ActiveBanners</strong></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        (function () {
+            const revenueData = @Html.Raw(JsonSerializer.Serialize(Model.RevenueLast30Days));
+            const statusData = @Html.Raw(JsonSerializer.Serialize(Model.OrderStatusBreakdown));
+
+            if (typeof Chart === "undefined") return;
+
+            const pick = (obj, camel, pascal, fallback = null) => {
+                if (!obj || typeof obj !== "object") return fallback;
+                if (obj[camel] !== undefined && obj[camel] !== null) return obj[camel];
+                if (obj[pascal] !== undefined && obj[pascal] !== null) return obj[pascal];
+                return fallback;
+            };
+
+            const revenueChartEl = document.getElementById("revenueChart");
+            if (revenueChartEl) {
+                const labels = (revenueData || []).map(x => pick(x, "label", "Label", ""));
+                const values = (revenueData || []).map(x => Number(pick(x, "revenue", "Revenue", 0)));
+                new Chart(revenueChartEl, {
+                    type: "line",
+                    data: {
+                        labels,
+                        datasets: [{
+                            label: "Doanh thu",
+                            data: values,
+                            borderColor: "#e30019",
+                            backgroundColor: "rgba(227,0,25,.15)",
+                            fill: true,
+                            tension: .35
+                        }]
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: (ctx) => `${Number(ctx.raw || 0).toLocaleString("vi-VN")}đ`
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            const statusChartEl = document.getElementById("statusChart");
+            if (statusChartEl) {
+                const labels = (statusData || []).map(x => pick(x, "status", "Status", "N/A"));
+                const values = (statusData || []).map(x => Number(pick(x, "count", "Count", 0)));
+                new Chart(statusChartEl, {
+                    type: "doughnut",
+                    data: {
+                        labels,
+                        datasets: [{
+                            data: values,
+                            backgroundColor: ["#ffc107", "#17a2b8", "#28a745", "#dc3545", "#0d6efd", "#6c757d"]
+                        }]
+                    },
+                    options: {
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+        })();
+    </script>
+}
+

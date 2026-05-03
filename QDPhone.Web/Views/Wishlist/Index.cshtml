@@ -1,0 +1,24 @@
+@model IEnumerable<QDPhone.Web.Models.Entities.Product>
+@{
+    ViewData["Title"] = "Sản phẩm yêu thích";
+}
+<h2>Sản phẩm yêu thích</h2>
+<div class="row g-3">
+@foreach (var p in Model)
+{
+    var minPrice = p.Variants.Any() ? p.Variants.Min(v => v.Price) : 0m;
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h5>@p.Name</h5>
+                <p class="text-danger fw-bold">@minPrice.ToString("N0") VND</p>
+                <a class="btn btn-sm btn-dark" asp-controller="Products" asp-action="Details" asp-route-id="@p.Id">Xem chi tiết</a>
+                <form asp-action="Remove" method="post" class="d-inline">
+                    <input type="hidden" name="productId" value="@p.Id" />
+                    <button class="btn btn-sm btn-outline-danger">Bỏ yêu thích</button>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+</div>

@@ -1,0 +1,26 @@
+@model IEnumerable<QDPhone.Web.Models.Entities.Notification>
+@{
+    ViewData["Title"] = "Thông báo";
+}
+<h2>Thông báo của bạn</h2>
+<table class="table">
+    <thead><tr><th>Nội dung</th><th>Trạng thái</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var n in Model)
+    {
+        <tr>
+            <td>@n.Content</td>
+            <td>@(n.IsRead ? "Đã đọc" : "Chưa đọc")</td>
+            <td>
+                @if (!n.IsRead)
+                {
+                    <form asp-action="MarkRead" method="post">
+                        <input type="hidden" name="id" value="@n.Id" />
+                        <button class="btn btn-sm btn-outline-dark">Đánh dấu đã đọc</button>
+                    </form>
+                }
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

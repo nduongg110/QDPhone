@@ -1,30 +1,48 @@
+@model QDPhone.Web.Models.Entities.Product
 @{
-    ViewData["Title"] = "iPhone 15 Pro Max";
-    var demoImage = "https://picsum.photos/seed/qdphone-demo/900/900";
+    ViewData["Title"] = Model.Name;
+    var variants = Model.Variants.OrderBy(v => v.Price).ToList();
+    var firstVariant = variants.FirstOrDefault();
+    var minPrice = Model.Variants.Any() ? Model.Variants.Min(v => v.Price) : 0m;
+    var oldPrice = minPrice > 0 ? Math.Round(minPrice * 1.1m, 0) : 0m;
+    var reviews = (IEnumerable<QDPhone.Web.Models.Entities.Review>)ViewBag.Reviews;
+    var related = (IEnumerable<QDPhone.Web.Models.Entities.Product>)ViewBag.RelatedProducts;
+    var loginReturnUrl = Url.Action("Details", "Products", new { id = Model.Id }) ?? "/";
+    var gallery = Model.Images
+        .OrderBy(x => x.SortOrder)
+        .Select(x => x.ImageUrl)
+        .Take(6)
+        .ToList();
+    if (!gallery.Any())
+    {
+        gallery = Enumerable.Range(1, 5)
+            .Select(i => $"https://picsum.photos/seed/qdphone-detail-{Model.Id}-{i}/900/900")
+            .ToList();
+    }
 }
 <nav class="small mb-3">
-    <a asp-controller="Home" asp-action="Index">Trang chủ</a> / <a asp-controller="Products" asp-action="Index">Sản phẩm</a> / <span>iPhone 15 Pro Max</span>
+    <a asp-controller="Home" asp-action="Index">Trang chủ</a> / <a asp-controller="Products" asp-action="Index">Sản phẩm</a> / <span>@Model.Name</span>
 </nav>
 
 <section class="row g-4">
     <div class="col-lg-6">
         <div class="card p-3">
-            <img id="primaryProductImage" src="@demoImage" class="img-fluid rounded" alt="iPhone 15 Pro Max" />
+            <img id="primaryProductImage" src="@gallery.First()" class="img-fluid rounded" alt="@Model.Name" />
             <div class="d-flex gap-2 mt-3">
-                @for (var i = 0; i < 4; i++)
+                @foreach (var photo in gallery)
                 {
-                    <img src="@demoImage" class="img-thumbnail product-thumb-mini" alt="iPhone 15 Pro Max" />
+                    <img src="@photo" class="img-thumbnail product-thumb-mini" alt="@Model.Name" onclick="changePrimaryImage(this.src)" />
                 }
             </div>
         </div>
     </div>
 
     <div class="col-lg-6">
-        <h1 class="h3 fw-bold">iPhone 15 Pro Max</h1>
-        <div class="text-muted mb-2">⭐ 4.8 (245 đánh giá) | Đã bán: 1,234 | Mã SP: SP1</div>
+        <h1 class="h3 fw-bold">@Model.Name</h1>
+        <div class="text-muted mb-2">⭐ 4.8 (245 đánh giá) | Đã bán: 1,234 | Mã SP: SP@Model.Id</div>
         <div class="mb-2">
-            <span class="price-new fs-2">27.990.000 đ</span>
-            <span class="price-old ms-2">30.789.000 đ</span>
+            <span class="price-new fs-2">@minPrice.ToString("N0") đ</span>
+            <span class="price-old ms-2">@oldPrice.ToString("N0") đ</span>
         </div>
         <div class="promo-box p-3 mb-3">
             <div>✓ Tặng gói bảo hành mở rộng 12 tháng.</div>
@@ -34,37 +52,110 @@
         <div class="mb-3">
             <label class="form-label fw-semibold">Phiên bản</label>
             <div class="variant-selector">
-                <a href="#" class="variant-pill">8GB / 256GB / Titan tự nhiên</a>
-                <a href="#" class="variant-pill">8GB / 512GB / Titan đen</a>
-                <a href="#" class="variant-pill">8GB / 1TB / Titan trắng</a>
+                @foreach (var v in variants)
+                {
+                    <input type="radio"
+                           class="btn-check variant-option-input"
+                           name="selectedVariant"
+                           id="variant-@v.Id"
+                           value="@v.Id"
+                           data-price="@v.Price"
+                           @(v.Id == firstVariant?.Id ? "checked" : null) />
+                    <label class="variant-pill" for="variant-@v.Id">@v.Ram / @v.Rom / @v.Color</label>
+                }
             </div>
         </div>
 
-        <div class="pdp-buy-actions">
-            <input class="form-control quantity-input" type="number" min="1" value="1" />
-            <a href="#" class="btn btn-outline-danger">THÊM VÀO GIỎ HÀNG</a>
-            <a href="#" class="btn btn-danger">MUA NGAY</a>
-        </div>
+        @if (firstVariant != null)
+        {
+            @if (User.Identity?.IsAuthenticated ?? false)
+            {
+                <form asp-action="AddToCart" method="post" class="d-grid gap-2">
+                    <input type="hidden" name="variantId" id="selectedVariantId" value="@firstVariant.Id" />
+                    <div class="pdp-buy-actions">
+                        <input name="quantity" class="form-control quantity-input" type="number" min="1" value="1" />
+                        <button class="btn btn-outline-danger" type="submit">THÊM VÀO GIỎ HÀNG</button>
+                        <button class="btn btn-danger" type="submit" formaction="@Url.Action("BuyNow", "Products")">MUA NGAY</button>
+                    </div>
+                </form>
+            }
+            else
+            {
+                <input type="hidden" id="selectedVariantIdGuest" value="@firstVariant.Id" />
+                <div class="pdp-buy-actions">
+                    <input class="form-control quantity-input" type="number" min="1" value="1" disabled />
+                    <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@loginReturnUrl" class="btn btn-outline-danger">THÊM VÀO GIỎ HÀNG</a>
+                    <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@loginReturnUrl" class="btn btn-danger">MUA NGAY</a>
+                </div>
+                <small class="text-muted">Vui lòng đăng nhập để thêm giỏ hàng hoặc mua ngay.</small>
+            }
+        }
     </div>
 </section>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const variantInputs = document.querySelectorAll(".variant-option-input");
+            const hiddenVariantId = document.getElementById("selectedVariantId");
+            if (!variantInputs.length || !hiddenVariantId) return;
+
+            variantInputs.forEach((input) => {
+                input.addEventListener("change", function () {
+                    if (this.checked) {
+                        hiddenVariantId.value = this.value;
+                    }
+                });
+            });
+        });
+    </script>
+}
 
 <section class="mt-4">
     <ul class="nav nav-tabs" role="tablist">
         <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#desc">Mô tả</button></li>
         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#spec">Thông số kỹ thuật</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#review">Đánh giá (@reviews.Count())</button></li>
     </ul>
     <div class="tab-content card border-top-0 p-3">
-        <div class="tab-pane fade show active" id="desc" style="white-space:pre-line;">
-            iPhone 15 Pro Max — flagship hiệu năng đỉnh cao, chip A17 Pro, camera tele 5x, khung Titan siêu nhẹ.
-        </div>
+        <div class="tab-pane fade show active" id="desc" style="white-space:pre-line;">@Model.Description</div>
         <div class="tab-pane fade" id="spec">
             <table class="table table-striped mb-0">
                 <tbody>
-                    <tr><th>Hãng</th><td>Apple</td></tr>
-                    <tr><th>Danh mục</th><td>Điện thoại</td></tr>
-                    <tr><th>Phiên bản</th><td>8GB/256GB/Titan tự nhiên, 8GB/512GB/Titan đen, 8GB/1TB/Titan trắng</td></tr>
+                    <tr><th>Hãng</th><td>@Model.Brand?.Name</td></tr>
+                    <tr><th>Danh mục</th><td>@Model.Category?.Name</td></tr>
+                    <tr><th>Phiên bản</th><td>@string.Join(", ", Model.Variants.Select(v => $"{v.Ram}/{v.Rom}/{v.Color}"))</td></tr>
                 </tbody>
             </table>
+        </div>
+        <div class="tab-pane fade" id="review">
+            @if (User.Identity?.IsAuthenticated ?? false)
+            {
+                <form asp-controller="Reviews" asp-action="Create" method="post" class="mb-3">
+                    <input type="hidden" name="productId" value="@Model.Id" />
+                    <div class="row g-2">
+                        <div class="col-md-2"><input class="form-control" name="rating" min="1" max="5" value="5" /></div>
+                        <div class="col-md-8"><input class="form-control" name="comment" placeholder="Nhập nhận xét của bạn..." /></div>
+                        <div class="col-md-2"><button class="btn btn-danger w-100">Gửi</button></div>
+                    </div>
+                </form>
+                <div class="alert alert-light border small">
+                    Bạn chỉ có thể gửi đánh giá khi đã từng mua sản phẩm này.
+                </div>
+            }
+            @if (!reviews.Any())
+            {
+                <p class="mb-0 text-muted">Chưa có đánh giá nào.</p>
+            }
+            else
+            {
+                <div class="d-grid gap-2">
+                    @foreach (var review in reviews)
+                    {
+                        <div class="border rounded p-2"><strong>@review.Rating sao</strong> - @review.Comment</div>
+                    }
+                </div>
+            }
         </div>
     </div>
 </section>
@@ -72,10 +163,10 @@
 <section class="mt-4">
     <h2 class="section-title">Sản phẩm tương tự</h2>
     <div class="row g-3 row-cols-2 row-cols-md-4">
-        @for (var i = 0; i < 4; i++)
+        @foreach (var r in related)
         {
             <div class="col">
-                <partial name="_ProductCard" />
+                <partial name="_ProductCard" model="r" />
             </div>
         }
     </div>

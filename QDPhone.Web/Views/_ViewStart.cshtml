@@ -1,17 +1,18 @@
 ﻿@{
     var controller = ViewContext.RouteData.Values["controller"]?.ToString();
     var action = ViewContext.RouteData.Values["action"]?.ToString();
-    var adminControllers = new[]
-    {
-        "Admin", "AdminUsers", "AdminProducts",
-        "Brands", "Categories", "Coupons"
-    };
+    var area = ViewContext.RouteData.Values["area"]?.ToString();
     var isAuthPage = controller == "Account" && (
         action == "Login" ||
         action == "Register" ||
+        action == "ForgotPassword" ||
+        action == "ForgotPasswordConfirmation" ||
+        action == "ResetPassword" ||
+        action == "ResetPasswordConfirmation" ||
         action == "RegisterSuccess" ||
+        action == "ConfirmEmailResult" ||
         action == "AccessDenied");
-    var isAdminPage = !string.IsNullOrWhiteSpace(controller) && adminControllers.Contains(controller);
+    var isAdminPage = string.Equals(area, "Admin", StringComparison.OrdinalIgnoreCase);
 
     Layout = isAuthPage ? "_AuthLayout" : isAdminPage ? "_AdminLayout" : "_Layout";
 }

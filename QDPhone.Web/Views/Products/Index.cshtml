@@ -1,5 +1,8 @@
+@model QDPhone.Web.Models.ViewModels.ProductListViewModel
 @{
     ViewData["Title"] = "Sản phẩm";
+    var brands = (IEnumerable<QDPhone.Web.Models.Entities.Brand>)ViewBag.Brands;
+    var categories = (IEnumerable<QDPhone.Web.Models.Entities.Category>)ViewBag.Categories;
 }
 
 <div class="row g-3">
@@ -7,50 +10,97 @@
         <div class="card p-3">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="mb-0">Bộ lọc</h5>
-                <a href="#" class="small text-decoration-none">Xóa nhanh</a>
+                <a asp-action="Index" class="small text-decoration-none">Xóa nhanh</a>
             </div>
-            <form method="get" action="#" class="d-grid gap-3">
-                <input class="form-control" name="q" placeholder="Tên sản phẩm, từ khóa..." />
+            <form method="get" id="product-filter-form" class="d-grid gap-3">
+                <input class="form-control" name="q" placeholder="Tên sản phẩm, từ khóa..." value="@Model.Q" />
                 <select class="form-select" name="categoryId">
                     <option value="">Danh mục</option>
-                    <option value="1">Điện thoại</option>
-                    <option value="2">Laptop</option>
-                    <option value="3">Phụ kiện</option>
+                    @foreach (var category in categories)
+                    {
+                        if (Model.CategoryId == category.Id)
+                        {
+                            <option value="@category.Id" selected>@category.Name</option>
+                        }
+                        else
+                        {
+                            <option value="@category.Id">@category.Name</option>
+                        }
+                    }
                 </select>
                 <select class="form-select" name="brandId">
                     <option value="">Thương hiệu</option>
-                    <option value="1">Apple</option>
-                    <option value="2">Samsung</option>
-                    <option value="3">Xiaomi</option>
+                    @foreach (var brand in brands)
+                    {
+                        if (Model.BrandId == brand.Id)
+                        {
+                            <option value="@brand.Id" selected>@brand.Name</option>
+                        }
+                        else
+                        {
+                            <option value="@brand.Id">@brand.Name</option>
+                        }
+                    }
                 </select>
                 <div>
                     <label class="form-label mb-1 fw-semibold">Khoảng giá</label>
                     <div class="row g-2">
                         <div class="col-6">
-                            <input class="form-control" placeholder="Từ (VND)" />
+                            <input class="form-control js-price-display" id="minPriceDisplay" placeholder="Từ (VND)" value="@(Model.MinPrice?.ToString("0"))" />
+                            <input type="hidden" name="minPrice" id="minPrice" value="@Model.MinPrice" />
                         </div>
                         <div class="col-6">
-                            <input class="form-control" placeholder="Đến (VND)" />
+                            <input class="form-control js-price-display" id="maxPriceDisplay" placeholder="Đến (VND)" value="@(Model.MaxPrice?.ToString("0"))" />
+                            <input type="hidden" name="maxPrice" id="maxPrice" value="@Model.MaxPrice" />
                         </div>
                     </div>
                     <div class="d-flex flex-wrap gap-1 mt-2">
-                        <a href="#" class="btn btn-sm btn-outline-secondary">Dưới 5 triệu</a>
-                        <a href="#" class="btn btn-sm btn-outline-secondary">5-10 triệu</a>
-                        <a href="#" class="btn btn-sm btn-outline-secondary">10-20 triệu</a>
-                        <a href="#" class="btn btn-sm btn-outline-secondary">Trên 20 triệu</a>
+                        <button type="button" class="btn btn-sm btn-outline-secondary js-price-preset" data-min="" data-max="5000000">Dưới 5 triệu</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary js-price-preset" data-min="5000000" data-max="10000000">5-10 triệu</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary js-price-preset" data-min="10000000" data-max="20000000">10-20 triệu</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary js-price-preset" data-min="20000000" data-max="">Trên 20 triệu</button>
                     </div>
                 </div>
-                <input class="form-control" name="ram" placeholder="RAM" />
-                <input class="form-control" name="rom" placeholder="ROM" />
-                <input class="form-control" name="os" placeholder="Hệ điều hành" />
+                <input class="form-control" name="ram" placeholder="RAM" value="@Model.Ram" />
+                <input class="form-control" name="rom" placeholder="ROM" value="@Model.Rom" />
+                <input class="form-control" name="os" placeholder="Hệ điều hành" value="@Model.Os" />
                 <select class="form-select" name="sort">
-                    <option value="">Sắp xếp</option>
-                    <option value="price_asc">Giá thấp đến cao</option>
-                    <option value="price_desc">Giá cao đến thấp</option>
-                    <option value="latest">Mới nhất</option>
+                    @if (string.IsNullOrWhiteSpace(Model.Sort))
+                    {
+                        <option value="" selected>Sắp xếp</option>
+                    }
+                    else
+                    {
+                        <option value="">Sắp xếp</option>
+                    }
+                    @if (Model.Sort == "price_asc")
+                    {
+                        <option value="price_asc" selected>Giá thấp đến cao</option>
+                    }
+                    else
+                    {
+                        <option value="price_asc">Giá thấp đến cao</option>
+                    }
+                    @if (Model.Sort == "price_desc")
+                    {
+                        <option value="price_desc" selected>Giá cao đến thấp</option>
+                    }
+                    else
+                    {
+                        <option value="price_desc">Giá cao đến thấp</option>
+                    }
+                    @if (Model.Sort == "latest")
+                    {
+                        <option value="latest" selected>Mới nhất</option>
+                    }
+                    else
+                    {
+                        <option value="latest">Mới nhất</option>
+                    }
                 </select>
-                <a href="#" class="btn btn-danger">Lọc sản phẩm</a>
-                <a href="#" class="btn btn-outline-secondary">Xóa bộ lọc</a>
+                <input type="hidden" name="page" value="1" />
+                <button class="btn btn-danger">Lọc sản phẩm</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Xóa bộ lọc</a>
             </form>
         </div>
     </aside>
@@ -58,15 +108,128 @@
     <section class="col-lg-9">
         <div class="d-flex align-items-center justify-content-between mb-3">
             <h1 class="h4 mb-0">Danh sách sản phẩm</h1>
-            <small class="text-muted">Hiển thị 12/12 sản phẩm</small>
+            <small class="text-muted">Hiển thị @Model.Products.Count/@Model.TotalItems sản phẩm</small>
         </div>
-        <div class="row g-3 row-cols-2 row-cols-md-3 row-cols-xl-4">
-            @for (var i = 0; i < 12; i++)
-            {
-                <div class="col">
-                    <partial name="_ProductCard" />
-                </div>
-            }
-        </div>
+        @if (!Model.Products.Any())
+        {
+            <div class="alert alert-warning">Không tìm thấy sản phẩm phù hợp bộ lọc hiện tại.</div>
+        }
+        else
+        {
+            <div class="row g-3 row-cols-2 row-cols-md-3 row-cols-xl-4">
+                @foreach (var p in Model.Products)
+                {
+                    <div class="col">
+                        <partial name="_ProductCard" model="p" />
+                    </div>
+                }
+            </div>
+        }
+
+        @if (Model.TotalPages > 1)
+        {
+            <nav class="mt-4">
+                <ul class="pagination pagination-modern pagination-sm flex-wrap">
+                    <li class="page-item @(Model.Page <= 1 ? "disabled" : null)">
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-q="@Model.Q"
+                           asp-route-categoryId="@Model.CategoryId"
+                           asp-route-brandId="@Model.BrandId"
+                           asp-route-minPrice="@Model.MinPrice"
+                           asp-route-maxPrice="@Model.MaxPrice"
+                           asp-route-ram="@Model.Ram"
+                           asp-route-rom="@Model.Rom"
+                           asp-route-os="@Model.Os"
+                           asp-route-sort="@Model.Sort"
+                           asp-route-page="@(Model.Page - 1)"
+                           asp-route-pageSize="@Model.PageSize">Trước</a>
+                    </li>
+                    @for (var p = 1; p <= Model.TotalPages; p++)
+                    {
+                        <li class="page-item @(p == Model.Page ? "active" : null)">
+                            <a class="page-link"
+                               asp-action="Index"
+                               asp-route-q="@Model.Q"
+                               asp-route-categoryId="@Model.CategoryId"
+                               asp-route-brandId="@Model.BrandId"
+                               asp-route-minPrice="@Model.MinPrice"
+                               asp-route-maxPrice="@Model.MaxPrice"
+                               asp-route-ram="@Model.Ram"
+                               asp-route-rom="@Model.Rom"
+                               asp-route-os="@Model.Os"
+                               asp-route-sort="@Model.Sort"
+                               asp-route-page="@p"
+                               asp-route-pageSize="@Model.PageSize">@p</a>
+                        </li>
+                    }
+                    <li class="page-item @(Model.Page >= Model.TotalPages ? "disabled" : null)">
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-q="@Model.Q"
+                           asp-route-categoryId="@Model.CategoryId"
+                           asp-route-brandId="@Model.BrandId"
+                           asp-route-minPrice="@Model.MinPrice"
+                           asp-route-maxPrice="@Model.MaxPrice"
+                           asp-route-ram="@Model.Ram"
+                           asp-route-rom="@Model.Rom"
+                           asp-route-os="@Model.Os"
+                           asp-route-sort="@Model.Sort"
+                           asp-route-page="@(Model.Page + 1)"
+                           asp-route-pageSize="@Model.PageSize">Sau</a>
+                    </li>
+                </ul>
+            </nav>
+        }
     </section>
 </div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const form = document.getElementById("product-filter-form");
+            if (!form) return;
+
+            const minDisplay = document.getElementById("minPriceDisplay");
+            const maxDisplay = document.getElementById("maxPriceDisplay");
+            const minHidden = document.getElementById("minPrice");
+            const maxHidden = document.getElementById("maxPrice");
+            const presetButtons = document.querySelectorAll(".js-price-preset");
+
+            const strip = (value) => (value || "").replace(/[^\d]/g, "");
+            const formatMoney = (value) => {
+                const raw = strip(value);
+                if (!raw) return "";
+                return Number(raw).toLocaleString("vi-VN");
+            };
+
+            const syncPriceInput = (displayInput, hiddenInput) => {
+                if (!displayInput || !hiddenInput) return;
+                displayInput.value = formatMoney(displayInput.value);
+                hiddenInput.value = strip(displayInput.value);
+                displayInput.addEventListener("input", () => {
+                    const raw = strip(displayInput.value);
+                    displayInput.value = formatMoney(raw);
+                    hiddenInput.value = raw;
+                });
+            };
+
+            syncPriceInput(minDisplay, minHidden);
+            syncPriceInput(maxDisplay, maxHidden);
+
+            presetButtons.forEach((btn) => {
+                btn.addEventListener("click", () => {
+                    minHidden.value = btn.dataset.min || "";
+                    maxHidden.value = btn.dataset.max || "";
+                    minDisplay.value = formatMoney(minHidden.value);
+                    maxDisplay.value = formatMoney(maxHidden.value);
+                });
+            });
+
+            form.addEventListener("submit", () => {
+                minHidden.value = strip(minDisplay.value);
+                maxHidden.value = strip(maxDisplay.value);
+            });
+        })();
+    </script>
+}

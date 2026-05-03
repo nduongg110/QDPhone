@@ -1,0 +1,81 @@
+@model QDPhone.Web.Models.Entities.Product
+@{
+    ViewData["Title"] = "Quản lý biến thể";
+    var variants = Model.Variants.OrderByDescending(x => x.Price).ToList();
+}
+<div class="page-header d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <h4 class="mb-1 fw-semibold">Biến thể sản phẩm: @Model.Name</h4>
+        <div class="page-breadcrumb">Thêm/sửa/xóa các phiên bản RAM/ROM/Màu</div>
+    </div>
+    <a asp-action="Index" class="btn btn-sm btn-outline-secondary">← Quay lại sản phẩm</a>
+</div>
+
+<form asp-action="AddVariant" method="post" class="admin-card mb-3">
+    <input type="hidden" name="productId" value="@Model.Id" />
+    <div class="row g-2 align-items-end">
+        <div class="col-md-2"><label class="form-label">RAM</label><input name="ram" class="form-control form-control-sm" required /></div>
+        <div class="col-md-2"><label class="form-label">ROM</label><input name="rom" class="form-control form-control-sm" required /></div>
+        <div class="col-md-2"><label class="form-label">Màu</label><input name="color" class="form-control form-control-sm" required /></div>
+        <div class="col-md-3"><label class="form-label">Giá</label><input type="number" name="price" class="form-control form-control-sm" min="0" step="1000" required /></div>
+        <div class="col-md-2"><label class="form-label">Kho</label><input type="number" name="stockQuantity" class="form-control form-control-sm" min="0" required /></div>
+        <div class="col-md-1 d-grid"><button class="btn btn-sm btn-danger">Thêm</button></div>
+    </div>
+</form>
+
+<div class="admin-card">
+    <div class="table-responsive">
+        <table class="table table-hover admin-table align-middle mb-0">
+            <thead><tr><th>Biến thể</th><th>Giá</th><th>Kho</th><th class="text-end">Thao tác</th></tr></thead>
+            <tbody>
+            @foreach (var v in variants)
+            {
+                <tr>
+                    <td>
+                        <form asp-action="UpdateVariant" method="post" class="row g-2 align-items-center">
+                            <input type="hidden" name="productId" value="@Model.Id" />
+                            <input type="hidden" name="variantId" value="@v.Id" />
+                            <div class="col-md-3"><input name="ram" class="form-control form-control-sm" value="@v.Ram" /></div>
+                            <div class="col-md-3"><input name="rom" class="form-control form-control-sm" value="@v.Rom" /></div>
+                            <div class="col-md-3"><input name="color" class="form-control form-control-sm" value="@v.Color" /></div>
+                            <div class="col-md-3 d-grid"><button class="btn btn-sm btn-outline-primary">Lưu</button></div>
+                        </form>
+                    </td>
+                    <td>
+                        <form asp-action="UpdateVariant" method="post" class="d-flex gap-2">
+                            <input type="hidden" name="productId" value="@Model.Id" />
+                            <input type="hidden" name="variantId" value="@v.Id" />
+                            <input type="hidden" name="ram" value="@v.Ram" />
+                            <input type="hidden" name="rom" value="@v.Rom" />
+                            <input type="hidden" name="color" value="@v.Color" />
+                            <input type="number" name="price" class="form-control form-control-sm" value="@v.Price" min="0" step="1000" />
+                            <input type="hidden" name="stockQuantity" value="@v.StockQuantity" />
+                            <button class="btn btn-sm btn-outline-primary">Lưu</button>
+                        </form>
+                    </td>
+                    <td>
+                        <form asp-action="UpdateVariant" method="post" class="d-flex gap-2">
+                            <input type="hidden" name="productId" value="@Model.Id" />
+                            <input type="hidden" name="variantId" value="@v.Id" />
+                            <input type="hidden" name="ram" value="@v.Ram" />
+                            <input type="hidden" name="rom" value="@v.Rom" />
+                            <input type="hidden" name="color" value="@v.Color" />
+                            <input type="hidden" name="price" value="@v.Price" />
+                            <input type="number" name="stockQuantity" class="form-control form-control-sm" value="@v.StockQuantity" min="0" />
+                            <button class="btn btn-sm btn-outline-primary">Lưu</button>
+                        </form>
+                    </td>
+                    <td class="text-end">
+                        <form asp-action="DeleteVariant" method="post" onsubmit="return confirm('Xóa biến thể này?');">
+                            <input type="hidden" name="productId" value="@Model.Id" />
+                            <input type="hidden" name="variantId" value="@v.Id" />
+                            <button class="btn btn-sm btn-outline-danger">Xóa</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+

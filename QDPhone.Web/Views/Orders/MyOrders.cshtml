@@ -1,0 +1,22 @@
+@model IEnumerable<QDPhone.Web.Models.Entities.Order>
+@{
+    ViewData["Title"] = "Đơn hàng của tôi";
+}
+<h2>Đơn hàng của tôi</h2>
+<table class="table table-striped">
+    <thead><tr><th>Mã</th><th>Ngày</th><th>Trạng thái</th><th>Mã giảm giá</th><th>Giảm</th><th>Tổng tiền</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var order in Model)
+    {
+        <tr>
+            <td>@order.Id</td>
+            <td>@order.CreatedAt.ToLocalTime()</td>
+            <td>@DisplayTextHelper.OrderStatus(order.Status)</td>
+            <td>@(string.IsNullOrWhiteSpace(order.CouponCode) ? "-" : order.CouponCode)</td>
+            <td>@(order.DiscountAmount > 0 ? $"-{order.DiscountAmount:N0}" : "-")</td>
+            <td>@order.TotalAmount.ToString("N0")</td>
+            <td><a asp-action="Details" asp-route-id="@order.Id">Chi tiết</a></td>
+        </tr>
+    }
+    </tbody>
+</table>

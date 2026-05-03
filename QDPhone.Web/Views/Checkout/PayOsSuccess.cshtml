@@ -1,0 +1,70 @@
+@model QDPhone.Web.Controllers.CheckoutController.PayOsSuccessViewModel
+@{
+    ViewData["Title"] = "Thanh toán thành công";
+}
+
+<section class="container py-4">
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4 p-md-5">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <span class="material-symbols-outlined text-success" style="font-size:36px;">check_circle</span>
+                <div>
+                    <h1 class="h4 mb-1">Thanh toán PayOS thành công</h1>
+                    <p class="text-muted mb-0">Cảm ơn bạn, đơn hàng đã được ghi nhận tại QDPhone.</p>
+                </div>
+            </div>
+
+            <div class="alert alert-success mb-4">
+                Đơn hàng <strong>#@Model.OrderCode</strong> đã thanh toán thành công.
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <div class="border rounded p-3 h-100">
+                        <div class="text-muted small">Mã đơn hàng</div>
+                        <div class="fw-semibold">#@Model.OrderCode</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="border rounded p-3 h-100">
+                        <div class="text-muted small">Phương thức thanh toán</div>
+                        <div class="fw-semibold">@Model.PaymentMethod</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="border rounded p-3 h-100">
+                        <div class="text-muted small">Trạng thái đơn</div>
+                        <div class="fw-semibold text-success">@Model.OrderStatus</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="border rounded p-3 h-100">
+                        <div class="text-muted small">Tổng thanh toán</div>
+                        <div class="fw-semibold text-danger">@Model.TotalAmount.ToString("N0") đ</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="border rounded p-3 h-100">
+                        <div class="text-muted small">Trạng thái từ PayOS</div>
+                        <div class="fw-semibold">@Model.PayOsStatus</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="border rounded p-3 h-100">
+                        <div class="text-muted small">Mã giao dịch PayOS</div>
+                        <div class="fw-semibold text-break">@(string.IsNullOrWhiteSpace(Model.TransactionId) ? "-" : Model.TransactionId)</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2">
+                <a asp-controller="Orders" asp-action="Details" asp-route-id="@Model.OrderCode" class="btn btn-danger">Xem chi tiết đơn hàng</a>
+                <a asp-controller="Orders" asp-action="MyOrders" class="btn btn-outline-secondary">Danh sách đơn hàng</a>
+                <a asp-controller="Products" asp-action="Index" class="btn btn-outline-primary">Tiếp tục mua sắm</a>
+            </div>
+        </div>
+    </div>
+</section>
