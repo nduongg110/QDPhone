@@ -120,6 +120,8 @@ wwwroot\uploads\products\f56e7b6d7da14fcaa739b4d3aefa69de.png
 wwwroot\uploads\products\f620afdc742a4da8b5751de933f0689a.png
 wwwroot\uploads\products\f8452d8f32d24b3297c71aabd65c11f0.webp
 wwwroot\uploads\products\fae8f5aaa8594237883de44001c061ad.png
+wwwroot\uploads\defaults\avatar.jpg
+wwwroot\uploads\products\5973680d937d4222bbabd1e1aa238c24.jpg
 D:\QDPhone\QDPhone.Web\wwwroot\js\admin.js
 D:\QDPhone\QDPhone.Web\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
 D:\QDPhone\QDPhone.Web\wwwroot\favicon.ico

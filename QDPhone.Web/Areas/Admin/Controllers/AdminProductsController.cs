@@ -355,7 +355,7 @@ public class AdminProductsController : Controller
         return RedirectToAction(nameof(Variants), new { productId });
     }
 
-    [HttpPost("{productId:int}/variants/update")]
+    [HttpPost("{productId:int}/variants/{variantId:int}/update")]
     public async Task<IActionResult> UpdateVariant(int productId, int variantId, string ram, string rom, string color, decimal price, int stockQuantity)
     {
         var variant = await _db.ProductVariants.FirstOrDefaultAsync(x => x.Id == variantId && x.ProductId == productId);
@@ -369,7 +369,7 @@ public class AdminProductsController : Controller
         return RedirectToAction(nameof(Variants), new { productId });
     }
 
-    [HttpPost("{productId:int}/variants/delete")]
+    [HttpPost("{productId:int}/variants/{variantId:int}/delete")]
     public async Task<IActionResult> DeleteVariant(int productId, int variantId)
     {
         var variantsCount = await _db.ProductVariants.CountAsync(x => x.ProductId == productId);
@@ -395,4 +395,3 @@ public class AdminProductsController : Controller
         return $"/uploads/{folderName}/{fileName}";
     }
 }
-

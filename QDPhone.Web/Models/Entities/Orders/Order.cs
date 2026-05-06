@@ -11,6 +11,8 @@ public class Order
     public string PaymentMethod { get; set; } = "COD";
     public int? CouponId { get; set; }
     public string? CouponCode { get; set; }
+    public string? ShippingAddress { get; set; }
+    public string? PhoneNumber { get; set; }
     public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
 }
 

@@ -43,92 +43,128 @@ public class CheckoutController : Controller
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var cart = await _cartService.GetCartViewAsync(userId);
-        var appliedCode = TempData["AppliedCouponCode"] as string;
-        if (!string.IsNullOrWhiteSpace(appliedCode))
-        {
-            var (coupon, discount, reason) = await _couponService.TryApplyCouponAsync(appliedCode, cart.SubTotal, userId);
-            if (coupon != null)
-            {
-                ViewBag.AppliedCouponCode = coupon.Code;
-                ViewBag.AppliedCouponDiscount = discount;
-                ViewBag.AppliedFinalTotal = Math.Max(0m, cart.SubTotal - discount);
-                ViewBag.AppliedCouponMessage = $"Đã áp dụng mã {coupon.Code}.";
-            }
-            else
-            {
-                ViewBag.AppliedCouponMessage = reason ?? "Mã khuyến mãi không hợp lệ.";
-            }
-        }
+        ViewBag.AppliedCouponCode = TempData["AppliedCouponCode"];
+        ViewBag.AppliedCouponDiscount = TempData["AppliedCouponDiscount"];
+        ViewBag.AppliedFinalTotal = TempData["AppliedFinalTotal"];
+        ViewBag.AppliedCouponMessage = TempData["AppliedCouponMessage"];
+
+        ViewBag.ShippingAddress = TempData["ShippingAddress"];
+        ViewBag.PhoneNumber = TempData["PhoneNumber"];
 
         return View(cart);
     }
 
     [HttpPost]
-    public async Task<IActionResult> ApplyCoupon(string? couponCode)
+    public async Task<IActionResult> ApplyCoupon(string? couponCode, string? shippingAddress, string? phoneNumber)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var cart = await _cartService.GetCartViewAsync(userId);
+        TempData["ShippingAddress"] = shippingAddress;
+        TempData["PhoneNumber"] = phoneNumber;
+
         if (string.IsNullOrWhiteSpace(couponCode))
         {
             TempData["Message"] = "Vui lòng nhập mã khuyến mãi.";
             return RedirectToAction(nameof(Index));
         }
 
-        var (coupon, _, reason) = await _couponService.TryApplyCouponAsync(couponCode, cart.SubTotal, userId);
+        var (coupon, discount, reason) = await _couponService.TryApplyCouponAsync(couponCode, cart.SubTotal, userId);
+
         if (coupon == null)
         {
             TempData["Message"] = reason ?? "Mã khuyến mãi không hợp lệ.";
             return RedirectToAction(nameof(Index));
         }
-
         TempData["AppliedCouponCode"] = coupon.Code;
-        TempData["Message"] = $"Áp dụng mã {coupon.Code} thành công.";
+        TempData["AppliedCouponDiscount"] = discount.ToString("N0");
+        TempData["AppliedFinalTotal"] = (cart.SubTotal - discount).ToString("N0");
+        TempData["AppliedCouponMessage"] = $"Áp dụng mã {coupon.Code} thành công.";
+
         return RedirectToAction(nameof(Index));
     }
 
+
     [HttpPost]
-    public async Task<IActionResult> PlaceCod(string? couponCode)
+    public async Task<IActionResult> PlaceCod(string? couponCode, string? shippingAddress, string? phoneNumber)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+
+        if (string.IsNullOrWhiteSpace(shippingAddress) || string.IsNullOrWhiteSpace(phoneNumber))
+        {
+            TempData["Message"] = "Vui lòng nhập đầy đủ địa chỉ và số điện thoại.";
+
+            TempData["ShippingAddress"] = shippingAddress;
+            TempData["PhoneNumber"] = phoneNumber;
+
+            return RedirectToAction(nameof(Index));
+        }
+
         var cart = await _cartService.GetCartViewAsync(userId);
+
         var couponId = 0;
         decimal discount = 0m;
+
         if (!string.IsNullOrWhiteSpace(couponCode))
         {
-            var (coupon, computedDiscount, reason) = await _couponService.TryApplyCouponAsync(couponCode, cart.SubTotal, userId);
+            var (coupon, computedDiscount, reason) =
+                await _couponService.TryApplyCouponAsync(couponCode, cart.SubTotal, userId);
+
             if (coupon != null)
             {
                 discount = computedDiscount;
                 couponId = coupon.Id;
-                TempData["Message"] = $"Áp dụng mã {coupon.Code} thành công.";
             }
             else
             {
-                TempData["Message"] = reason ?? "Mã khuyến mãi không hợp lệ.";
+                TempData["Message"] = reason ?? "Mã không hợp lệ.";
             }
         }
 
-        var (order, error) = await _orderService.PlaceOrderFromCartAsync(userId, discount, "COD", couponId > 0 ? couponId : null, couponId > 0 ? couponCode?.Trim().ToUpperInvariant() : null);
+        var (order, error) = await _orderService.PlaceOrderFromCartAsync(
+            userId,
+            discount,
+            "COD",
+            couponId > 0 ? couponId : null,
+            couponId > 0 ? couponCode?.Trim().ToUpperInvariant() : null,
+            shippingAddress,
+            phoneNumber
+        );
+
         if (order == null)
         {
             TempData["Message"] = error ?? "Thanh toán thất bại.";
             return RedirectToAction(nameof(Index));
         }
 
-        if (couponId > 0) await _couponService.ConsumeAsync(couponId, userId, order.Id);
+        if (couponId > 0)
+            await _couponService.ConsumeAsync(couponId, userId, order.Id);
+
         await _notificationService.NotifyOrderCreatedAsync(userId, order.Id, order.TotalAmount);
+
         TempData["Message"] = $"Đơn hàng #{order.Id} đã được tạo.";
         return RedirectToAction("Success", "Orders", new { id = order.Id });
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreatePayOs(string? couponCode)
+    public async Task<IActionResult> CreatePayOs(string? couponCode, string? shippingAddress, string? phoneNumber)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        if (string.IsNullOrWhiteSpace(shippingAddress) || string.IsNullOrWhiteSpace(phoneNumber))
+        {
+            TempData["Message"] = "Vui lòng nhập đầy đủ địa chỉ và số điện thoại.";
+
+            TempData["ShippingAddress"] = shippingAddress;
+            TempData["PhoneNumber"] = phoneNumber;
+
+            return RedirectToAction(nameof(Index));
+        }
         var cart = await _cartService.GetCartViewAsync(userId);
+
         var finalAmount = cart.SubTotal;
         var couponId = 0;
         decimal discount = 0m;
+
         if (!string.IsNullOrWhiteSpace(couponCode))
         {
             var (coupon, computedDiscount, reason) = await _couponService.TryApplyCouponAsync(couponCode, cart.SubTotal, userId);
@@ -144,7 +180,16 @@ public class CheckoutController : Controller
             }
         }
 
-        var (order, error) = await _orderService.PlaceOrderFromCartAsync(userId, discount, "PAYOS", couponId > 0 ? couponId : null, couponId > 0 ? couponCode?.Trim().ToUpperInvariant() : null);
+        var (order, error) = await _orderService.PlaceOrderFromCartAsync(
+            userId,
+            discount,
+            "PAYOS",
+            couponId > 0 ? couponId : null,
+            couponId > 0 ? couponCode?.Trim().ToUpperInvariant() : null,
+            shippingAddress,
+            phoneNumber
+        );
+
         if (order == null)
         {
             TempData["Message"] = error ?? "Thanh toán thất bại.";
@@ -152,6 +197,7 @@ public class CheckoutController : Controller
         }
 
         await _notificationService.NotifyOrderCreatedAsync(userId, order.Id, order.TotalAmount);
+
         try
         {
             var paymentUrl = await _paymentService.CreatePayOsCheckoutUrlAsync(order.Id, finalAmount);
@@ -162,22 +208,51 @@ public class CheckoutController : Controller
             _logger.LogError(ex, "Create PayOS payment link failed for order {OrderId}", order.Id);
             await _orderService.UpdatePaymentStatusAsync(order.Id, "PaymentFailed");
             await _orderService.RestoreStockForFailedPaymentAsync(order.Id);
-            TempData["Message"] = "Không tạo được link thanh toán PayOS. Vui lòng kiểm tra cấu hình API và thử lại.";
+
+            TempData["Message"] = "Không tạo được link thanh toán PayOS.";
             return RedirectToAction(nameof(Index));
         }
     }
 
     [AllowAnonymous]
     [HttpGet]
-    public async Task<IActionResult> PayOsCallback(string status, int orderCode, string amount, string signature)
+    public async Task<IActionResult> PayOsCallback(string? status, int orderCode, string? id, string? code, bool? cancel)
     {
-        var result = await ProcessPayOsPaymentResultAsync(orderCode, amount, status, signature);
-        if (!result.IsSuccess) return BadRequest(result.ErrorMessage ?? "Invalid payload");
-        var mappedStatus = result.MappedStatus ?? "PaymentFailed";
-        var vnStatus = mappedStatus == "Paid" ? "Đã thanh toán" : "Thanh toán thất bại";
-        TempData["Message"] = $"PayOS phản hồi cho đơn {orderCode} với trạng thái {vnStatus}.";
+        var mappedStatus = MapPayOsStatus(status ?? string.Empty);
+
+        // Xử lý trạng thái đơn hàng từ return URL (không có amount/signature)
+        var order = await _db.Orders.FindAsync(orderCode);
+        if (order != null)
+        {
+            // Tránh cập nhật trùng nếu webhook đã xử lý trước
+            var externalTransactionId = $"payos-return-{orderCode}-{status}";
+            var existed = await _db.PaymentTransactions.AnyAsync(x => x.ExternalTransactionId == externalTransactionId);
+            if (!existed)
+            {
+                await _orderService.UpdatePaymentStatusAsync(orderCode, mappedStatus);
+                if (mappedStatus == "Paid" && order.CouponId > 0)
+                    await _couponService.ConsumeAsync(order.CouponId.Value, order.UserId, order.Id);
+                if (mappedStatus == "PaymentFailed")
+                    await _orderService.RestoreStockForFailedPaymentAsync(orderCode);
+                await _notificationService.NotifyOrderStatusChangedAsync(order.UserId, order.Id, mappedStatus);
+                _db.PaymentTransactions.Add(new Models.Entities.PaymentTransaction
+                {
+                    OrderId = orderCode,
+                    ExternalTransactionId = externalTransactionId,
+                    Status = mappedStatus,
+                    Gateway = "PayOS"
+                });
+                await _db.SaveChangesAsync();
+            }
+        }
+
         if (mappedStatus == "Paid")
-            return RedirectToAction(nameof(PayOsSuccess), new { orderCode, status = "PAID" });
+        {
+            TempData["Message"] = $"Thanh toán đơn hàng #{orderCode} thành công!";
+            return RedirectToAction(nameof(PayOsSuccess), new { orderCode, status = "PAID", id, code });
+        }
+
+        TempData["Message"] = $"Thanh toán đơn hàng #{orderCode} thất bại hoặc đã bị huỷ.";
         return RedirectToAction("MyOrders", "Orders");
     }
 
@@ -353,4 +428,3 @@ public class CheckoutController : Controller
         public string? TransactionId { get; set; }
     }
 }
-

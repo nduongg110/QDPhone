@@ -1065,7 +1065,6 @@ D:\QDPhone\QDPhone.Web\obj\Debug\net10.0\scopedcss\projectbundle\QDPhone.Web.bun
 D:\QDPhone\QDPhone.Web\obj\Debug\net10.0\compressed\yf2bv04h6b-{0}-o1n5dwvitv-o1n5dwvitv.gz
 D:\QDPhone\QDPhone.Web\obj\Debug\net10.0\compressed\pesptjj9y5-{0}-jch9692ev3-jch9692ev3.gz
 D:\QDPhone\QDPhone.Web\obj\Debug\net10.0\compressed\e757zkn1h3-{0}-1rta79jogb-1rta79jogb.gz
-D:\QDPhone\QDPhone.Web\obj\Debug\net10.0\compressed\aue4aa9vw6-{0}-i0bkqcseaq-i0bkqcseaq.gz
 D:\QDPhone\QDPhone.Web\obj\Debug\net10.0\compressed\plhbc3w0wv-{0}-exa8w3401u-exa8w3401u.gz
 D:\QDPhone\QDPhone.Web\obj\Debug\net10.0\compressed\mf2pu18szj-{0}-bqjiyaj88i-bqjiyaj88i.gz
 D:\QDPhone\QDPhone.Web\obj\Debug\net10.0\compressed\9z01o8esxj-{0}-c2jlpeoesf-c2jlpeoesf.gz
@@ -1144,3 +1143,4 @@ D:\QDPhone\QDPhone.Web\obj\Debug\net10.0\QDPhone.Web.pdb
 D:\QDPhone\QDPhone.Web\obj\Debug\net10.0\QDPhone.Web.genruntimeconfig.cache
 D:\QDPhone\QDPhone.Web\obj\Debug\net10.0\ref\QDPhone.Web.dll
 D:\QDPhone\QDPhone.Web\obj\Debug\net10.0\staticwebassets.upToDateCheck.txt
+D:\QDPhone\QDPhone.Web\obj\Debug\net10.0\compressed\aue4aa9vw6-{0}-i0bkqcseaq-i0bkqcseaq.gz

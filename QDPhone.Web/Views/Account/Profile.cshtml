@@ -17,7 +17,7 @@
         <form method="post" enctype="multipart/form-data" class="row g-3 align-items-start">
             <div class="col-12 col-lg-4">
                 <div class="profile-avatar-panel">
-                    <img src="@(string.IsNullOrWhiteSpace(Model.AvatarUrl) ? "https://picsum.photos/seed/qdphone-avatar/200/200" : Model.AvatarUrl)"
+                    <img src="@(string.IsNullOrWhiteSpace(Model.AvatarUrl) ? "/uploads/defaults/avatar.jpg" : Model.AvatarUrl)"
                          alt="Avatar"
                          class="profile-avatar-preview" />
                     <label class="form-label fw-semibold mt-3">Ảnh đại diện</label>

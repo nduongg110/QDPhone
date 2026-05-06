@@ -165,6 +165,22 @@ public class AdminController : Controller
         return View(model);
     }
 
+    [Authorize(Policy = "StaffOrAdmin")]
+    [HttpPost("update-order-status")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateOrderStatus(int orderId, string status)
+    {
+        var validStatuses = new[] { "Pending", "PendingPayment", "Paid", "Shipping", "Done", "Cancelled", "PaymentFailed" };
+        if (!validStatuses.Contains(status))
+            return BadRequest("Trạng thái không hợp lệ.");
+
+        var success = await _orderService.UpdateOrderStatusAsync(orderId, status);
+        if (!success)
+            return NotFound("Không tìm thấy đơn hàng.");
+
+        return Ok(new { message = "Đã cập nhật trạng thái đơn hàng." });
+    }
+
     [Authorize(Policy = "AdminOnly")]
     [HttpGet("export-orders")]
     public async Task<FileResult> ExportOrders()
@@ -214,7 +230,10 @@ public class AdminController : Controller
         page = Math.Max(1, page);
         pageSize = Math.Clamp(pageSize, 10, 100);
 
-        var baseQuery = _db.Orders.AsNoTracking();
+        var baseQuery = _db.Orders
+            .AsNoTracking()
+            .Include(x => x.Items);
+
         var statusCounts = new QDPhone.Web.Models.ViewModels.AdminOrderStatusCountViewModel
         {
             All = await baseQuery.CountAsync(),
@@ -226,6 +245,7 @@ public class AdminController : Controller
         };
 
         IQueryable<QDPhone.Web.Models.Entities.Order> filtered = baseQuery;
+
         filtered = status switch
         {
             "pending" => filtered.Where(x => x.Status == "Pending" || x.Status == "PendingPayment"),
@@ -238,17 +258,23 @@ public class AdminController : Controller
 
         if (!string.IsNullOrWhiteSpace(paymentMethod))
             filtered = filtered.Where(x => x.PaymentMethod == paymentMethod);
+
         if (fromDate.HasValue)
             filtered = filtered.Where(x => x.CreatedAt >= fromDate.Value.Date);
+
         if (toDate.HasValue)
             filtered = filtered.Where(x => x.CreatedAt <= toDate.Value.Date.AddDays(1).AddTicks(-1));
+
         if (!string.IsNullOrWhiteSpace(q))
         {
             var keyword = q.Trim();
-            filtered = filtered.Where(x => x.UserId.Contains(keyword) || EF.Functions.Like(x.Id.ToString(), $"%{keyword}%"));
+            filtered = filtered.Where(x =>
+                x.UserId.Contains(keyword) ||
+                EF.Functions.Like(x.Id.ToString(), $"%{keyword}%"));
         }
 
         var totalItems = await filtered.CountAsync();
+
         var pageOrders = await filtered
             .OrderByDescending(x => x.CreatedAt)
             .Skip((page - 1) * pageSize)
@@ -263,44 +289,60 @@ public class AdminController : Controller
                 x.PaymentMethod,
                 x.Status,
                 x.CreatedAt,
-                FirstProductName = x.Items.OrderBy(i => i.Id).Select(i => i.ProductName).FirstOrDefault(),
-                MoreProductCount = Math.Max(0, x.Items.Count - 1)
+                x.PhoneNumber,
+                x.ShippingAddress,
+
+                FirstProductName = x.Items
+                    .OrderBy(i => i.Id)
+                    .Select(i => i.ProductName)
+                    .FirstOrDefault(),
+
+                MoreProductCount = x.Items.Count - 1
             })
             .ToListAsync();
 
         var userIds = pageOrders.Select(x => x.UserId).Distinct().ToList();
-        var users = await _db.Users.Where(x => userIds.Contains(x.Id))
+
+        var users = await _db.Users
+            .Where(x => userIds.Contains(x.Id))
             .Select(x => new { x.Id, x.FullName, x.PhoneNumber })
             .ToListAsync();
+
         var userMap = users.ToDictionary(x => x.Id, x => x);
-        var rows = pageOrders
-            .Select(x => new QDPhone.Web.Models.ViewModels.AdminOrderRowViewModel
-            {
-                Id = x.Id,
-                UserId = x.UserId,
-                CustomerName = x.UserId,
-                PhoneNumber = "-",
-                FirstProductName = x.FirstProductName ?? "N/A",
-                MoreProductCount = x.MoreProductCount,
-                TotalAmount = x.TotalAmount,
-                DiscountAmount = x.DiscountAmount,
-                CouponCode = x.CouponCode,
-                PaymentMethod = x.PaymentMethod,
-                Status = x.Status,
-                CreatedAt = x.CreatedAt
-            })
-            .ToList();
+
+        var rows = pageOrders.Select(x => new QDPhone.Web.Models.ViewModels.AdminOrderRowViewModel
+        {
+            Id = x.Id,
+            UserId = x.UserId,
+
+            CustomerName = x.UserId,
+            PhoneNumber = x.PhoneNumber ?? "-",
+
+            ShippingAddress = x.ShippingAddress ?? "-",
+
+            FirstProductName = x.FirstProductName ?? "N/A",
+            MoreProductCount = x.MoreProductCount > 0 ? x.MoreProductCount : 0,
+
+            TotalAmount = x.TotalAmount,
+            DiscountAmount = x.DiscountAmount,
+            CouponCode = x.CouponCode,
+
+            PaymentMethod = x.PaymentMethod,
+            Status = x.Status,
+            CreatedAt = x.CreatedAt
+        }).ToList();
+
         foreach (var row in rows)
         {
             if (userMap.TryGetValue(row.UserId, out var user))
             {
                 row.CustomerName = user.FullName ?? row.UserId;
-                row.PhoneNumber = user.PhoneNumber ?? "-";
             }
         }
 
         ViewBag.Breadcrumb = "Đơn hàng";
         ViewBag.PendingOrdersCount = statusCounts.Pending;
+
         return View(new QDPhone.Web.Models.ViewModels.AdminOrderIndexViewModel
         {
             Rows = rows,
@@ -315,37 +357,4 @@ public class AdminController : Controller
             StatusCounts = statusCounts
         });
     }
-
-    [Authorize(Policy = "StaffOrAdmin")]
-    [HttpPost]
-    [Route("orders/update-status")]
-    public async Task<IActionResult> UpdateOrderStatus(int orderId, string status)
-    {
-        var allowed = new[] { "Pending", "PendingPayment", "Paid", "Shipping", "Done", "Cancelled", "PaymentFailed" };
-        if (!allowed.Contains(status)) return BadRequest();
-        var order = await _db.Orders.AsNoTracking().FirstOrDefaultAsync(x => x.Id == orderId);
-        if (order == null) return NotFound();
-        var changed = await _orderService.UpdatePaymentStatusAsync(orderId, status);
-        if (!changed)
-        {
-            TempData["Message"] = $"Không thể chuyển trạng thái từ {order.Status} sang {status}.";
-            return RedirectToAction(nameof(Orders));
-        }
-
-        if (status == "PaymentFailed")
-            await _orderService.RestoreStockForFailedPaymentAsync(orderId);
-        var actorUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "system";
-        _db.AdminAuditLogs.Add(new QDPhone.Web.Models.Entities.AdminAuditLog
-        {
-            ActorUserId = actorUserId,
-            Action = "UpdateOrderStatus",
-            TargetType = "Order",
-            TargetId = orderId.ToString(),
-            Detail = $"From={order.Status};To={status}"
-        });
-        await _db.SaveChangesAsync();
-        await _notificationService.NotifyOrderStatusChangedAsync(order.UserId, order.Id, status);
-        return RedirectToAction(nameof(Orders));
-    }
 }
-

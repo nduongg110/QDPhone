@@ -8,8 +8,18 @@ public interface IOrderService
 {
     Task<Order> PlaceCodOrderAsync(string userId, decimal totalAmount);
     Task<bool> UpdatePaymentStatusAsync(int orderId, string status);
+    Task<bool> UpdateOrderStatusAsync(int orderId, string status);
     Task<bool> RestoreStockForFailedPaymentAsync(int orderId);
-    Task<(Order? order, string? error)> PlaceOrderFromCartAsync(string userId, decimal discountAmount, string paymentMethod, int? couponId = null, string? couponCode = null);
+
+    Task<(Order? order, string? error)> PlaceOrderFromCartAsync(
+        string userId,
+        decimal discountAmount,
+        string paymentMethod,
+        int? couponId = null,
+        string? couponCode = null,
+        string? shippingAddress = null,
+        string? phoneNumber = null
+    );
 }
 
 public class OrderService : IOrderService
@@ -19,7 +29,14 @@ public class OrderService : IOrderService
 
     public async Task<Order> PlaceCodOrderAsync(string userId, decimal totalAmount)
     {
-        var order = new Order { UserId = userId, TotalAmount = totalAmount, PaymentMethod = "COD", Status = "Pending" };
+        var order = new Order
+        {
+            UserId = userId,
+            TotalAmount = totalAmount,
+            PaymentMethod = "COD",
+            Status = "Pending"
+        };
+
         _db.Orders.Add(order);
         await _db.SaveChangesAsync();
         return order;
@@ -31,6 +48,17 @@ public class OrderService : IOrderService
         if (order == null) return false;
         if (!IsOrderStatusTransitionAllowed(order.Status, status)) return false;
         if (order.Status == status) return true;
+
+        order.Status = status;
+        await _db.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> UpdateOrderStatusAsync(int orderId, string status)
+    {
+        var order = await _db.Orders.FindAsync(orderId);
+        if (order == null) return false;
+
         order.Status = status;
         await _db.SaveChangesAsync();
         return true;
@@ -41,6 +69,7 @@ public class OrderService : IOrderService
         var order = await _db.Orders
             .Include(x => x.Items)
             .FirstOrDefaultAsync(x => x.Id == orderId);
+
         if (order == null || !order.Items.Any()) return false;
 
         var restoreReason = $"OrderPaymentFailedRestore:{orderId}";
@@ -55,7 +84,9 @@ public class OrderService : IOrderService
         foreach (var item in order.Items)
         {
             if (!variants.TryGetValue(item.ProductVariantId, out var variant)) continue;
+
             variant.StockQuantity += item.Quantity;
+
             _db.InventoryTransactions.Add(new InventoryTransaction
             {
                 ProductVariantId = variant.Id,
@@ -71,6 +102,7 @@ public class OrderService : IOrderService
     private static bool IsOrderStatusTransitionAllowed(string current, string target)
     {
         if (string.Equals(current, target, StringComparison.OrdinalIgnoreCase)) return true;
+
         return current switch
         {
             "Pending" => target is "PendingPayment" or "Paid" or "Cancelled" or "PaymentFailed" or "Shipping",
@@ -84,24 +116,41 @@ public class OrderService : IOrderService
         };
     }
 
-    public async Task<(Order? order, string? error)> PlaceOrderFromCartAsync(string userId, decimal discountAmount, string paymentMethod, int? couponId = null, string? couponCode = null)
+    public async Task<(Order? order, string? error)> PlaceOrderFromCartAsync(
+        string userId,
+        decimal discountAmount,
+        string paymentMethod,
+        int? couponId = null,
+        string? couponCode = null,
+        string? shippingAddress = null,
+        string? phoneNumber = null)
     {
         await using var tx = await _db.Database.BeginTransactionAsync();
-        var cart = await _db.Carts.Include(c => c.Items).FirstOrDefaultAsync(x => x.UserId == userId);
-        if (cart == null || !cart.Items.Any()) return (null, "Giỏ hàng trống.");
+
+        var cart = await _db.Carts
+            .Include(c => c.Items)
+            .FirstOrDefaultAsync(x => x.UserId == userId);
+
+        if (cart == null || !cart.Items.Any())
+            return (null, "Giỏ hàng trống.");
 
         var variantIds = cart.Items.Select(x => x.ProductVariantId).Distinct().ToList();
+
         var variants = await _db.ProductVariants
             .Include(v => v.Product)
             .Where(v => variantIds.Contains(v.Id))
             .ToDictionaryAsync(v => v.Id);
+
         decimal subtotal = 0m;
+
         foreach (var item in cart.Items)
         {
             if (!variants.TryGetValue(item.ProductVariantId, out var variant))
                 return (null, "Sản phẩm không tồn tại.");
+
             if (variant.StockQuantity < item.Quantity)
                 return (null, $"Không đủ tồn kho cho biến thể {variant.Id}.");
+
             subtotal += variant.Price * item.Quantity;
         }
 
@@ -109,6 +158,7 @@ public class OrderService : IOrderService
         {
             var variant = variants[item.ProductVariantId];
             variant.StockQuantity -= item.Quantity;
+
             _db.InventoryTransactions.Add(new InventoryTransaction
             {
                 ProductVariantId = variant.Id,
@@ -118,22 +168,32 @@ public class OrderService : IOrderService
         }
 
         var finalAmount = Math.Max(0m, subtotal - discountAmount);
+
         var order = new Order
         {
             UserId = userId,
+            ShippingAddress = shippingAddress,
+            PhoneNumber = phoneNumber,
+
             TotalAmount = finalAmount,
             DiscountAmount = Math.Max(0m, discountAmount),
+
             PaymentMethod = paymentMethod,
             Status = paymentMethod == "COD" ? "Pending" : "PendingPayment",
+
             CouponId = couponId,
-            CouponCode = couponCode
+            CouponCode = couponCode,
+
+            CreatedAt = DateTime.Now
         };
+
         _db.Orders.Add(order);
         await _db.SaveChangesAsync();
 
         foreach (var item in cart.Items)
         {
             var variant = variants[item.ProductVariantId];
+
             _db.OrderItems.Add(new OrderItem
             {
                 OrderId = order.Id,
@@ -146,9 +206,10 @@ public class OrderService : IOrderService
         }
 
         _db.CartItems.RemoveRange(cart.Items);
+
         await _db.SaveChangesAsync();
         await tx.CommitAsync();
+
         return (order, null);
     }
 }
-

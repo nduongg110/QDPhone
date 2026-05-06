@@ -56,6 +56,7 @@
                 <tr>
                     <th>Mã đơn</th>
                     <th>Khách hàng</th>
+                    <th>Địa chỉ</th> 
                     <th>Sản phẩm</th>
                     <th>Tổng tiền</th>
                     <th>Coupon</th>
@@ -78,10 +79,18 @@
                     };
                     <tr>
                         <td class="fw-semibold text-danger">#@order.Id</td>
+
                         <td>
                             <div class="fw-semibold">@order.CustomerName</div>
                             <div class="text-muted small">@order.PhoneNumber</div>
                         </td>
+
+                        <td>
+                            <div style="max-width:220px; white-space:normal;">
+                                @(string.IsNullOrWhiteSpace(order.ShippingAddress) ? "-" : order.ShippingAddress)
+                            </div>
+                        </td>
+
                         <td>
                             @order.FirstProductName
                             @if (order.MoreProductCount > 0)
@@ -89,6 +98,7 @@
                                 <span class="text-muted small">(+@order.MoreProductCount SP)</span>
                             }
                         </td>
+
                         <td class="fw-semibold">
                             @order.TotalAmount.ToString("N0")đ
                             @if (order.DiscountAmount > 0)
@@ -96,15 +106,26 @@
                                 <div class="small text-success">Giảm -@order.DiscountAmount.ToString("N0")đ</div>
                             }
                         </td>
+
                         <td>
                             @(string.IsNullOrWhiteSpace(order.CouponCode) ? "-" : order.CouponCode)
                         </td>
-                        <td><span class="badge text-bg-light border">@order.PaymentMethod</span></td>
-                        <td><span class="badge badge-status @badgeClass js-order-status-badge">@DisplayTextHelper.OrderStatus(order.Status)</span></td>
+
+                        <td>
+                            <span class="badge text-bg-light border">@order.PaymentMethod</span>
+                        </td>
+
+                        <td>
+                            <span class="badge badge-status @badgeClass js-order-status-badge">
+                                @DisplayTextHelper.OrderStatus(order.Status)
+                            </span>
+                        </td>
+
                         <td>
                             <div>@order.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</div>
                             <small class="text-muted">@order.CreatedAt.ToLocalTime().ToString("HH:mm")</small>
                         </td>
+
                         <td>
                             <form asp-action="UpdateOrderStatus" method="post" class="d-flex gap-1 js-ajax-form" data-success-message="Đã cập nhật trạng thái đơn hàng." data-reload="none" data-update="order-status">
                                 <input type="hidden" name="orderId" value="@order.Id" />
@@ -126,27 +147,3 @@
         </table>
     </div>
 </div>
-
-@if (Model.TotalPages > 1)
-{
-    <div class="d-flex justify-content-between align-items-center mt-3">
-        <div class="text-muted small">
-            Hiển thị @((Model.Page - 1) * Model.PageSize + 1)-@Math.Min(Model.Page * Model.PageSize, Model.TotalItems) trong @Model.TotalItems đơn hàng
-        </div>
-        <ul class="pagination pagination-sm mb-0">
-            <li class="page-item @(Model.Page <= 1 ? "disabled" : null)">
-                <a class="page-link" asp-action="Orders" asp-route-status="@Model.Status" asp-route-paymentMethod="@Model.PaymentMethod" asp-route-fromDate="@Model.FromDate?.ToString("yyyy-MM-dd")" asp-route-toDate="@Model.ToDate?.ToString("yyyy-MM-dd")" asp-route-q="@Model.Q" asp-route-page="@(Model.Page - 1)" asp-route-pageSize="@Model.PageSize">Trước</a>
-            </li>
-            @for (var p = 1; p <= Model.TotalPages; p++)
-            {
-                <li class="page-item @(p == Model.Page ? "active" : null)">
-                    <a class="page-link" asp-action="Orders" asp-route-status="@Model.Status" asp-route-paymentMethod="@Model.PaymentMethod" asp-route-fromDate="@Model.FromDate?.ToString("yyyy-MM-dd")" asp-route-toDate="@Model.ToDate?.ToString("yyyy-MM-dd")" asp-route-q="@Model.Q" asp-route-page="@p" asp-route-pageSize="@Model.PageSize">@p</a>
-                </li>
-            }
-            <li class="page-item @(Model.Page >= Model.TotalPages ? "disabled" : null)">
-                <a class="page-link" asp-action="Orders" asp-route-status="@Model.Status" asp-route-paymentMethod="@Model.PaymentMethod" asp-route-fromDate="@Model.FromDate?.ToString("yyyy-MM-dd")" asp-route-toDate="@Model.ToDate?.ToString("yyyy-MM-dd")" asp-route-q="@Model.Q" asp-route-page="@(Model.Page + 1)" asp-route-pageSize="@Model.PageSize">Sau</a>
-            </li>
-        </ul>
-    </div>
-}
-

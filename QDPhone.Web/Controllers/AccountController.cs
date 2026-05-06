@@ -54,7 +54,7 @@ public class AccountController : Controller
             UserName = model.Email,       // Username = Email
             Email = model.Email,
             FullName = model.FullName,
-            EmailConfirmed = true         // Bỏ qua xác thực email
+            EmailConfirmed = true         
         };
 
         // Tạo user trong DB

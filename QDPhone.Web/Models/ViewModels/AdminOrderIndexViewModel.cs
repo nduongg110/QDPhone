@@ -11,7 +11,9 @@ public class AdminOrderIndexViewModel
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 20;
     public int TotalItems { get; set; }
+
     public int TotalPages => TotalItems <= 0 ? 1 : (int)Math.Ceiling(TotalItems / (double)PageSize);
+
     public AdminOrderStatusCountViewModel StatusCounts { get; set; } = new();
 }
 
@@ -29,14 +31,22 @@ public class AdminOrderRowViewModel
 {
     public int Id { get; set; }
     public string UserId { get; set; } = string.Empty;
+
     public string CustomerName { get; set; } = string.Empty;
+
     public string PhoneNumber { get; set; } = string.Empty;
+
+    public string ShippingAddress { get; set; } = string.Empty;
+
     public string FirstProductName { get; set; } = string.Empty;
     public int MoreProductCount { get; set; }
+
     public decimal TotalAmount { get; set; }
     public decimal DiscountAmount { get; set; }
     public string? CouponCode { get; set; }
+
     public string PaymentMethod { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
+
     public DateTime CreatedAt { get; set; }
 }
