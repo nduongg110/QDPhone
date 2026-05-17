@@ -32,7 +32,8 @@
         <button class="btn btn-danger w-100" type="submit">ĐĂNG NHẬP</button>
     </form>
     <hr />
-    <form asp-action="ExternalLogin" method="post" class="mb-3">
+    <form asp-controller="Account" asp-action="ExternalLogin" method="post" class="mb-3">
+        @Html.AntiForgeryToken()
         <input type="hidden" name="provider" value="Google" />
         <button type="submit" class="btn btn-outline-dark w-100">Đăng nhập bằng Google</button>
     </form>

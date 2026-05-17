@@ -64,6 +64,7 @@ wwwroot\lib\jquery\dist\jquery.slim.min.js
 wwwroot\lib\jquery\dist\jquery.slim.min.map
 wwwroot\lib\jquery\LICENSE.txt
 wwwroot\robots.txt
+wwwroot\uploads\defaults\avatar.jpg
 wwwroot\uploads\defaults\banner1.png
 wwwroot\uploads\defaults\banner2.png
 wwwroot\uploads\defaults\banner3.png
@@ -87,6 +88,7 @@ wwwroot\uploads\products\3e35e2ceda3442ce82290f15be928ff4.webp
 wwwroot\uploads\products\438e5d531135415d871e7e674e033272.webp
 wwwroot\uploads\products\4db3a63f49bd47e28fb33238f4997a16.png
 wwwroot\uploads\products\55916c98078448019e257c14959102e2.png
+wwwroot\uploads\products\5973680d937d4222bbabd1e1aa238c24.jpg
 wwwroot\uploads\products\5984acf34f98404f840e0a6e02fd4857.webp
 wwwroot\uploads\products\5b33de1d503b4e5698613a88af6051bd.webp
 wwwroot\uploads\products\5f8e680c438640d794d78bda04a0c88b.webp
@@ -120,8 +122,6 @@ wwwroot\uploads\products\f56e7b6d7da14fcaa739b4d3aefa69de.png
 wwwroot\uploads\products\f620afdc742a4da8b5751de933f0689a.png
 wwwroot\uploads\products\f8452d8f32d24b3297c71aabd65c11f0.webp
 wwwroot\uploads\products\fae8f5aaa8594237883de44001c061ad.png
-wwwroot\uploads\defaults\avatar.jpg
-wwwroot\uploads\products\5973680d937d4222bbabd1e1aa238c24.jpg
 D:\QDPhone\QDPhone.Web\wwwroot\js\admin.js
 D:\QDPhone\QDPhone.Web\wwwroot\lib\bootstrap\dist\css\bootstrap-grid.css
 D:\QDPhone\QDPhone.Web\wwwroot\favicon.ico

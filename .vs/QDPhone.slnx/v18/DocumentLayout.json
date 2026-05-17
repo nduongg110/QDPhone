@@ -3,48 +3,16 @@
   "WorkspaceRootPath": "D:\\QDPhone\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{537AB228-795A-86F5-FE45-720BD65C817D}|QDPhone.Web\\QDPhone.Web.csproj|d:\\qdphone\\qdphone.web\\controllers\\checkoutcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{537AB228-795A-86F5-FE45-720BD65C817D}|QDPhone.Web\\QDPhone.Web.csproj|solutionrelative:qdphone.web\\controllers\\checkoutcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{537AB228-795A-86F5-FE45-720BD65C817D}|QDPhone.Web\\QDPhone.Web.csproj|d:\\qdphone\\qdphone.web\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{537AB228-795A-86F5-FE45-720BD65C817D}|QDPhone.Web\\QDPhone.Web.csproj|solutionrelative:qdphone.web\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{537AB228-795A-86F5-FE45-720BD65C817D}|QDPhone.Web\\QDPhone.Web.csproj|d:\\qdphone\\qdphone.web\\views\\checkout\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{537AB228-795A-86F5-FE45-720BD65C817D}|QDPhone.Web\\QDPhone.Web.csproj|solutionrelative:qdphone.web\\views\\checkout\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{537AB228-795A-86F5-FE45-720BD65C817D}|QDPhone.Web\\QDPhone.Web.csproj|d:\\qdphone\\qdphone.web\\views\\account\\login.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{537AB228-795A-86F5-FE45-720BD65C817D}|QDPhone.Web\\QDPhone.Web.csproj|solutionrelative:qdphone.web\\views\\account\\login.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{537AB228-795A-86F5-FE45-720BD65C817D}|QDPhone.Web\\QDPhone.Web.csproj|d:\\qdphone\\qdphone.web\\areas\\admin\\views\\adminproducts\\variants.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{537AB228-795A-86F5-FE45-720BD65C817D}|QDPhone.Web\\QDPhone.Web.csproj|solutionrelative:qdphone.web\\areas\\admin\\views\\adminproducts\\variants.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{537AB228-795A-86F5-FE45-720BD65C817D}|QDPhone.Web\\QDPhone.Web.csproj|d:\\qdphone\\qdphone.web\\areas\\admin\\views\\adminproducts\\images.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{537AB228-795A-86F5-FE45-720BD65C817D}|QDPhone.Web\\QDPhone.Web.csproj|solutionrelative:qdphone.web\\areas\\admin\\views\\adminproducts\\images.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{537AB228-795A-86F5-FE45-720BD65C817D}|QDPhone.Web\\QDPhone.Web.csproj|d:\\qdphone\\qdphone.web\\areas\\admin\\controllers\\adminproductscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{537AB228-795A-86F5-FE45-720BD65C817D}|QDPhone.Web\\QDPhone.Web.csproj|solutionrelative:qdphone.web\\areas\\admin\\controllers\\adminproductscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{537AB228-795A-86F5-FE45-720BD65C817D}|QDPhone.Web\\QDPhone.Web.csproj|d:\\qdphone\\qdphone.web\\services\\orders\\orderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{537AB228-795A-86F5-FE45-720BD65C817D}|QDPhone.Web\\QDPhone.Web.csproj|solutionrelative:qdphone.web\\services\\orders\\orderservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{537AB228-795A-86F5-FE45-720BD65C817D}|QDPhone.Web\\QDPhone.Web.csproj|d:\\qdphone\\qdphone.web\\areas\\admin\\controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{537AB228-795A-86F5-FE45-720BD65C817D}|QDPhone.Web\\QDPhone.Web.csproj|solutionrelative:qdphone.web\\areas\\admin\\controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{537AB228-795A-86F5-FE45-720BD65C817D}|QDPhone.Web\\QDPhone.Web.csproj|d:\\qdphone\\qdphone.web\\wwwroot\\js\\admin.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
-      "RelativeMoniker": "D:0:0:{537AB228-795A-86F5-FE45-720BD65C817D}|QDPhone.Web\\QDPhone.Web.csproj|solutionrelative:qdphone.web\\wwwroot\\js\\admin.js||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{537AB228-795A-86F5-FE45-720BD65C817D}|QDPhone.Web\\QDPhone.Web.csproj|d:\\qdphone\\qdphone.web\\areas\\admin\\views\\admin\\orders.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{537AB228-795A-86F5-FE45-720BD65C817D}|QDPhone.Web\\QDPhone.Web.csproj|solutionrelative:qdphone.web\\areas\\admin\\views\\admin\\orders.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{537AB228-795A-86F5-FE45-720BD65C817D}|QDPhone.Web\\QDPhone.Web.csproj|d:\\qdphone\\qdphone.web\\models\\viewmodels\\adminorderindexviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{537AB228-795A-86F5-FE45-720BD65C817D}|QDPhone.Web\\QDPhone.Web.csproj|solutionrelative:qdphone.web\\models\\viewmodels\\adminorderindexviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{537AB228-795A-86F5-FE45-720BD65C817D}|QDPhone.Web\\QDPhone.Web.csproj|d:\\qdphone\\qdphone.web\\models\\entities\\orders\\order.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{537AB228-795A-86F5-FE45-720BD65C817D}|QDPhone.Web\\QDPhone.Web.csproj|solutionrelative:qdphone.web\\models\\entities\\orders\\order.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{537AB228-795A-86F5-FE45-720BD65C817D}|QDPhone.Web\\QDPhone.Web.csproj|d:\\qdphone\\qdphone.web\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{537AB228-795A-86F5-FE45-720BD65C817D}|QDPhone.Web\\QDPhone.Web.csproj|solutionrelative:qdphone.web\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{537AB228-795A-86F5-FE45-720BD65C817D}|QDPhone.Web\\QDPhone.Web.csproj|d:\\qdphone\\qdphone.web\\views\\account\\profile.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
@@ -58,150 +26,54 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 8,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "Variants.cshtml",
-              "DocumentMoniker": "D:\\QDPhone\\QDPhone.Web\\Areas\\Admin\\Views\\AdminProducts\\Variants.cshtml",
-              "RelativeDocumentMoniker": "QDPhone.Web\\Areas\\Admin\\Views\\AdminProducts\\Variants.cshtml",
-              "ToolTip": "D:\\QDPhone\\QDPhone.Web\\Areas\\Admin\\Views\\AdminProducts\\Variants.cshtml",
-              "RelativeToolTip": "QDPhone.Web\\Areas\\Admin\\Views\\AdminProducts\\Variants.cshtml",
-              "ViewState": "AgIAADQAAAAAAAAAAAAYwE0AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-05-06T15:46:01.711Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "Images.cshtml",
-              "DocumentMoniker": "D:\\QDPhone\\QDPhone.Web\\Areas\\Admin\\Views\\AdminProducts\\Images.cshtml",
-              "RelativeDocumentMoniker": "QDPhone.Web\\Areas\\Admin\\Views\\AdminProducts\\Images.cshtml",
-              "ToolTip": "D:\\QDPhone\\QDPhone.Web\\Areas\\Admin\\Views\\AdminProducts\\Images.cshtml",
-              "RelativeToolTip": "QDPhone.Web\\Areas\\Admin\\Views\\AdminProducts\\Images.cshtml",
-              "ViewState": "AgIAACcAAAAAAAAAAAAAAEMAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-05-06T15:45:46.676Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "AdminProductsController.cs",
-              "DocumentMoniker": "D:\\QDPhone\\QDPhone.Web\\Areas\\Admin\\Controllers\\AdminProductsController.cs",
-              "RelativeDocumentMoniker": "QDPhone.Web\\Areas\\Admin\\Controllers\\AdminProductsController.cs",
-              "ToolTip": "D:\\QDPhone\\QDPhone.Web\\Areas\\Admin\\Controllers\\AdminProductsController.cs",
-              "RelativeToolTip": "QDPhone.Web\\Areas\\Admin\\Controllers\\AdminProductsController.cs",
-              "ViewState": "AgIAAHEBAAAAAAAAAAAIwIwBAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-06T15:45:13.57Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "admin.js",
-              "DocumentMoniker": "D:\\QDPhone\\QDPhone.Web\\wwwroot\\js\\admin.js",
-              "RelativeDocumentMoniker": "QDPhone.Web\\wwwroot\\js\\admin.js",
-              "ToolTip": "D:\\QDPhone\\QDPhone.Web\\wwwroot\\js\\admin.js",
-              "RelativeToolTip": "QDPhone.Web\\wwwroot\\js\\admin.js",
-              "ViewState": "AgIAAI4AAAAAAAAAAAAAAKAAAAAMAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001646|",
-              "WhenOpened": "2026-05-06T15:17:44.469Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "AdminController.cs",
-              "DocumentMoniker": "D:\\QDPhone\\QDPhone.Web\\Areas\\Admin\\Controllers\\AdminController.cs",
-              "RelativeDocumentMoniker": "QDPhone.Web\\Areas\\Admin\\Controllers\\AdminController.cs",
-              "ToolTip": "D:\\QDPhone\\QDPhone.Web\\Areas\\Admin\\Controllers\\AdminController.cs",
-              "RelativeToolTip": "QDPhone.Web\\Areas\\Admin\\Controllers\\AdminController.cs",
-              "ViewState": "AgIAAEwBAAAAAAAAAAAIwF4BAAAfAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-06T14:33:11.448Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "Orders.cshtml",
-              "DocumentMoniker": "D:\\QDPhone\\QDPhone.Web\\Areas\\Admin\\Views\\Admin\\Orders.cshtml",
-              "RelativeDocumentMoniker": "QDPhone.Web\\Areas\\Admin\\Views\\Admin\\Orders.cshtml",
-              "ToolTip": "D:\\QDPhone\\QDPhone.Web\\Areas\\Admin\\Views\\Admin\\Orders.cshtml",
-              "RelativeToolTip": "QDPhone.Web\\Areas\\Admin\\Views\\Admin\\Orders.cshtml",
-              "ViewState": "AgIAAHMAAAAAAAAAAAD4v4EAAADJAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-05-06T14:25:58.213Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "Index.cshtml",
-              "DocumentMoniker": "D:\\QDPhone\\QDPhone.Web\\Views\\Checkout\\Index.cshtml",
-              "RelativeDocumentMoniker": "QDPhone.Web\\Views\\Checkout\\Index.cshtml",
-              "ToolTip": "D:\\QDPhone\\QDPhone.Web\\Views\\Checkout\\Index.cshtml",
-              "RelativeToolTip": "QDPhone.Web\\Views\\Checkout\\Index.cshtml",
-              "ViewState": "AgIAABwAAAAAAAAAAAAIwEwAAAAHAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-05-06T14:16:59.244Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "OrderService.cs",
-              "DocumentMoniker": "D:\\QDPhone\\QDPhone.Web\\Services\\Orders\\OrderService.cs",
-              "RelativeDocumentMoniker": "QDPhone.Web\\Services\\Orders\\OrderService.cs",
-              "ToolTip": "D:\\QDPhone\\QDPhone.Web\\Services\\Orders\\OrderService.cs",
-              "RelativeToolTip": "QDPhone.Web\\Services\\Orders\\OrderService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAANYAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-06T14:12:51.202Z"
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "CheckoutController.cs",
-              "DocumentMoniker": "D:\\QDPhone\\QDPhone.Web\\Controllers\\CheckoutController.cs",
-              "RelativeDocumentMoniker": "QDPhone.Web\\Controllers\\CheckoutController.cs",
-              "ToolTip": "D:\\QDPhone\\QDPhone.Web\\Controllers\\CheckoutController.cs",
-              "RelativeToolTip": "QDPhone.Web\\Controllers\\CheckoutController.cs",
-              "ViewState": "AgIAAOoAAAAAAAAAAAAkwPsAAABZAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-06T14:08:40.886Z",
+              "Title": "launchSettings.json",
+              "DocumentMoniker": "D:\\QDPhone\\QDPhone.Web\\Properties\\launchSettings.json",
+              "RelativeDocumentMoniker": "QDPhone.Web\\Properties\\launchSettings.json",
+              "ToolTip": "D:\\QDPhone\\QDPhone.Web\\Properties\\launchSettings.json",
+              "RelativeToolTip": "QDPhone.Web\\Properties\\launchSettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAvAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-05-17T02:16:29.983Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "AdminOrderIndexViewModel.cs",
-              "DocumentMoniker": "D:\\QDPhone\\QDPhone.Web\\Models\\ViewModels\\AdminOrderIndexViewModel.cs",
-              "RelativeDocumentMoniker": "QDPhone.Web\\Models\\ViewModels\\AdminOrderIndexViewModel.cs",
-              "ToolTip": "D:\\QDPhone\\QDPhone.Web\\Models\\ViewModels\\AdminOrderIndexViewModel.cs",
-              "RelativeToolTip": "QDPhone.Web\\Models\\ViewModels\\AdminOrderIndexViewModel.cs",
-              "ViewState": "AgIAACAAAAAAAAAAAAA3wDMAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-06T14:07:19.99Z"
+              "DocumentIndex": 1,
+              "Title": "Login.cshtml",
+              "DocumentMoniker": "D:\\QDPhone\\QDPhone.Web\\Views\\Account\\Login.cshtml",
+              "RelativeDocumentMoniker": "QDPhone.Web\\Views\\Account\\Login.cshtml",
+              "ToolTip": "D:\\QDPhone\\QDPhone.Web\\Views\\Account\\Login.cshtml",
+              "RelativeToolTip": "QDPhone.Web\\Views\\Account\\Login.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAC0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-05-16T14:17:19.537Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "Order.cs",
-              "DocumentMoniker": "D:\\QDPhone\\QDPhone.Web\\Models\\Entities\\Orders\\Order.cs",
-              "RelativeDocumentMoniker": "QDPhone.Web\\Models\\Entities\\Orders\\Order.cs",
-              "ToolTip": "D:\\QDPhone\\QDPhone.Web\\Models\\Entities\\Orders\\Order.cs",
-              "RelativeToolTip": "QDPhone.Web\\Models\\Entities\\Orders\\Order.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAsAAAAAAAAAA==",
+              "DocumentIndex": 2,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\QDPhone\\QDPhone.Web\\Program.cs",
+              "RelativeDocumentMoniker": "QDPhone.Web\\Program.cs",
+              "ToolTip": "D:\\QDPhone\\QDPhone.Web\\Program.cs",
+              "RelativeToolTip": "QDPhone.Web\\Program.cs",
+              "ViewState": "AgIAAEYAAAAAAAAAAAAnwGIAAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-06T13:56:09.809Z"
+              "WhenOpened": "2026-05-16T14:09:26.805Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 3,
               "Title": "Profile.cshtml",
               "DocumentMoniker": "D:\\QDPhone\\QDPhone.Web\\Views\\Account\\Profile.cshtml",
               "RelativeDocumentMoniker": "QDPhone.Web\\Views\\Account\\Profile.cshtml",
               "ToolTip": "D:\\QDPhone\\QDPhone.Web\\Views\\Account\\Profile.cshtml",
               "RelativeToolTip": "QDPhone.Web\\Views\\Account\\Profile.cshtml",
-              "ViewState": "AgIAABgAAAAAAAAAAAAAAAAAAAA1AAAAAAAAAA==",
+              "ViewState": "AgIAABgAAAAAAAAAAAAAABwAAAApAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2026-05-03T15:01:43.184Z"
             }
