@@ -1,0 +1,162 @@
+@model QDPhone.Web.Models.Entities.Product
+@{
+    ViewData["Title"] = "Quản lý ảnh sản phẩm";
+    var selectedVariantId = ViewBag.SelectedVariantId as int?;
+    var variants = Model.Variants.OrderBy(v => v.Price).ToList();
+
+    // Lấy ảnh theo scope: nếu chọn variant thì lấy ảnh của variant đó, không thì ảnh chung
+    var orderedImages = Model.Images
+        .Where(x => x.VariantId == selectedVariantId)
+        .OrderBy(x => x.SortOrder)
+        .ToList();
+}
+
+<div class="page-header d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <h4 class="mb-1 fw-semibold">Quản lý ảnh: @Model.Name</h4>
+        <div class="page-breadcrumb">Mỗi biến thể màu sắc có thể có bộ ảnh riêng</div>
+    </div>
+    <a asp-action="Index" class="btn btn-sm btn-outline-secondary">← Quay lại danh sách</a>
+</div>
+
+<div class="admin-card mb-3">
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+        <span class="fw-semibold me-2">Xem ảnh theo biến thể:</span>
+        <a asp-action="Images" asp-route-productId="@Model.Id"
+           class="btn btn-sm @(selectedVariantId == null ? "btn-danger" : "btn-outline-secondary")">
+            Ảnh chung
+        </a>
+        @foreach (var v in variants)
+        {
+            var hasImg = Model.Images.Any(i => i.VariantId == v.Id);
+            <a asp-action="Images" asp-route-productId="@Model.Id" asp-route-variantId="@v.Id"
+               class="btn btn-sm @(selectedVariantId == v.Id ? "btn-danger" : "btn-outline-secondary") position-relative">
+                @v.Color / @v.Ram / @v.Rom
+                @if (hasImg)
+                {
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success" style="font-size:9px;">✓</span>
+                }
+            </a>
+        }
+    </div>
+</div>
+
+<form asp-action="AddImage" asp-route-productId="@Model.Id" method="post" enctype="multipart/form-data" class="admin-card row g-2 mb-4">
+    @if (selectedVariantId.HasValue)
+    {
+        <input type="hidden" name="variantId" value="@selectedVariantId" />
+    }
+    <div class="col-md-5">
+        <label class="form-label">URL ảnh</label>
+        <input class="form-control form-control-sm" type="url" name="imageUrl" placeholder="https://... (không bắt buộc)" />
+    </div>
+    <div class="col-md-5">
+        <label class="form-label">Upload từ máy</label>
+        <input class="form-control form-control-sm" type="file" name="imageFile" accept="image/*" />
+    </div>
+    <div class="col-md-2 d-flex align-items-end">
+        <button class="btn btn-sm btn-danger w-100" type="submit">Thêm ảnh</button>
+    </div>
+    @if (selectedVariantId.HasValue)
+    {
+        var v = variants.FirstOrDefault(x => x.Id == selectedVariantId);
+        <div class="col-12">
+            <small class="text-muted">Ảnh sẽ được gán cho biến thể: <strong>@v?.Color / @v?.Ram / @v?.Rom</strong></small>
+        </div>
+    }
+    else
+    {
+    }
+</form>
+
+@if (!orderedImages.Any())
+{
+    <div class="admin-card">
+        <div class="alert alert-warning mb-0">
+            Chưa có ảnh nào cho @(selectedVariantId.HasValue ? "biến thể này" : "ảnh chung").
+        </div>
+    </div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var image in orderedImages)
+        {
+            <div class="col-12 col-md-6 col-xl-4">
+                <div class="admin-card h-100 p-2">
+                    <img src="@image.ImageUrl" class="card-img-top" style="height:220px;object-fit:cover;" alt="@Model.Name" />
+                    <div class="card-body d-grid gap-2">
+                        <div class="small text-muted text-break">@image.ImageUrl</div>
+
+                        <form asp-action="UpdateSortOrder" asp-route-productId="@Model.Id" method="post" class="d-flex gap-2">
+                            <input type="hidden" name="imageId" value="@image.Id" />
+                            @if (selectedVariantId.HasValue)
+                            {
+                                <input type="hidden" name="variantId" value="@selectedVariantId" />
+                            }
+                            <input type="number" min="0" class="form-control form-control-sm" name="sortOrder" value="@image.SortOrder" />
+                            <button class="btn btn-sm btn-outline-primary" type="submit">Lưu STT</button>
+                        </form>
+
+                        <form asp-action="SetPrimaryImage" asp-route-productId="@Model.Id" method="post">
+                            <input type="hidden" name="imageId" value="@image.Id" />
+                            @if (selectedVariantId.HasValue)
+                            {
+                                <input type="hidden" name="variantId" value="@selectedVariantId" />
+                            }
+                            <button class="btn btn-sm @(image.IsPrimary ? "btn-success" : "btn-outline-success") w-100" type="submit">
+                                @(image.IsPrimary ? "Ảnh chính" : "Đặt làm ảnh chính")
+                            </button>
+                        </form>
+
+                        <form asp-action="MoveImage" asp-route-productId="@Model.Id" method="post" class="d-flex gap-2">
+                            <input type="hidden" name="imageId" value="@image.Id" />
+                            @if (selectedVariantId.HasValue)
+                            {
+                                <input type="hidden" name="variantId" value="@selectedVariantId" />
+                            }
+                            <select name="targetScope" class="form-select form-select-sm" onchange="handleMoveScope(this)">
+                                <option value="">-- Chuyển sang... --</option>
+                                @if (selectedVariantId.HasValue)
+                                {
+                                    <option value="shared">📦 Ảnh chung</option>
+                                }
+                                @foreach (var v in variants)
+                                {
+                                    if (v.Id == selectedVariantId) continue;
+                                    <option value="variant" data-variant-id="@v.Id">🎨 @v.Color / @v.Ram / @v.Rom</option>
+                                }
+                            </select>
+                            <input type="hidden" name="targetVariantId" class="target-variant-id" value="" />
+                            <button class="btn btn-sm btn-outline-warning flex-shrink-0" type="submit">Chuyển</button>
+                        </form>
+
+                        <form asp-action="DeleteImage" asp-route-productId="@Model.Id" method="post" onsubmit="return confirm('Xóa ảnh này?');">
+                            <input type="hidden" name="imageId" value="@image.Id" />
+                            @if (selectedVariantId.HasValue)
+                            {
+                                <input type="hidden" name="variantId" value="@selectedVariantId" />
+                            }
+                            <button class="btn btn-sm btn-outline-danger w-100" type="submit">Xóa ảnh</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@section Scripts {
+    <script>
+        function handleMoveScope(select) {
+            const form = select.closest('form');
+            const hiddenInput = form.querySelector('.target-variant-id');
+            const selected = select.options[select.selectedIndex];
+            if (selected.value === 'variant') {
+                hiddenInput.value = selected.dataset.variantId;
+            } else {
+                hiddenInput.value = '';
+            }
+        }
+    </script>
+}

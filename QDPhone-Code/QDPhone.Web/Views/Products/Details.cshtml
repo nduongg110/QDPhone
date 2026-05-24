@@ -1,0 +1,317 @@
+@model QDPhone.Web.Models.Entities.Product
+@{
+    ViewData["Title"] = Model.Name;
+    var variants = Model.Variants.OrderBy(v => v.Price).ToList();
+    var firstVariant = variants.FirstOrDefault();
+    var minPrice = Model.Variants.Any() ? Model.Variants.Min(v => v.Price) : 0m;
+    var oldPrice = minPrice > 0 ? Math.Round(minPrice * 1.1m, 0) : 0m;
+    var reviews = (IEnumerable<QDPhone.Web.Models.Entities.Review>)ViewBag.Reviews;
+    var related = (IEnumerable<QDPhone.Web.Models.Entities.Product>)ViewBag.RelatedProducts;
+    var loginReturnUrl = Url.Action("Details", "Products", new { id = Model.Id }) ?? "/";
+
+    // Xây dict: variantId -> danh sách imageUrl (primary đầu tiên)
+    var variantImageMap = variants.ToDictionary(
+        v => v.Id,
+        v =>
+        {
+            var imgs = Model.Images
+                .Where(i => i.VariantId == v.Id)
+                .OrderByDescending(i => i.IsPrimary)
+                .ThenBy(i => i.SortOrder)
+                .Select(i => i.ImageUrl)
+                .Take(6)
+                .ToList();
+
+            // Fallback: ảnh chung của product (VariantId == null)
+            if (!imgs.Any())
+            {
+                imgs = Model.Images
+                    .Where(i => i.VariantId == null)
+                    .OrderByDescending(i => i.IsPrimary)
+                    .ThenBy(i => i.SortOrder)
+                    .Select(i => i.ImageUrl)
+                    .Take(6)
+                    .ToList();
+            }
+
+            // Cuối cùng fallback picsum
+            if (!imgs.Any())
+            {
+                imgs = Enumerable.Range(1, 5)
+                    .Select(i => $"https://picsum.photos/seed/qdphone-detail-{Model.Id}-{v.Id}-{i}/900/900")
+                    .ToList();
+            }
+            return imgs;
+        }
+    );
+
+    // Gallery ban đầu là của firstVariant
+    var initialGallery = firstVariant != null && variantImageMap.ContainsKey(firstVariant.Id)
+        ? variantImageMap[firstVariant.Id]
+        : new List<string>();
+}
+
+<nav class="small mb-3">
+    <a asp-controller="Home" asp-action="Index">Trang chủ</a> / <a asp-controller="Products" asp-action="Index">Sản phẩm</a> / <span>@Model.Name</span>
+</nav>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center gap-2 mb-3" role="alert">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-exclamation-triangle-fill flex-shrink-0" viewBox="0 0 16 16">
+            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+        </svg>
+        <span>@TempData["ErrorMessage"]</span>
+        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Đóng"></button>
+    </div>
+}
+
+<section class="row g-4">
+    <div class="col-lg-6">
+        <div class="card p-3">
+            <img id="primaryProductImage" src="@(initialGallery.FirstOrDefault() ?? "")" class="img-fluid rounded" alt="@Model.Name" />
+            <div id="galleryThumbs" class="d-flex gap-2 mt-3">
+                @foreach (var photo in initialGallery)
+                {
+                    <img src="@photo" class="img-thumbnail product-thumb-mini" alt="@Model.Name" onclick="changePrimaryImage(this.src)" />
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <h1 class="h3 fw-bold">@Model.Name</h1>
+        <div class="text-muted mb-2">⭐ 4.8 (245 đánh giá) | Đã bán: 1,234 | Mã SP: SP@Model.Id</div>
+        <div class="mb-2">
+            <span id="displayPrice" class="price-new fs-2">@minPrice.ToString("N0") đ</span>
+            <span id="displayOldPrice" class="price-old ms-2">@oldPrice.ToString("N0") đ</span>
+        </div>
+        <div class="promo-box p-3 mb-3">
+            <div>✓ Tặng gói bảo hành mở rộng 12 tháng.</div>
+            <div>✓ Giảm thêm khi thanh toán online.</div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Phiên bản</label>
+            <div class="variant-selector">
+                @foreach (var v in variants)
+                {
+                    <input type="radio"
+                           class="btn-check variant-option-input"
+                           name="selectedVariant"
+                           id="variant-@v.Id"
+                           value="@v.Id"
+                           data-price="@v.Price"
+                           data-stock="@v.StockQuantity"
+                           data-images="@System.Text.Json.JsonSerializer.Serialize(variantImageMap.ContainsKey(v.Id) ? variantImageMap[v.Id] : new List<string>())"
+                    @(v.Id == firstVariant?.Id ? "checked" : null) />
+                    <label class="variant-pill" for="variant-@v.Id">@v.Ram / @v.Rom / @v.Color</label>
+                }
+            </div>
+        </div>
+
+        @if (firstVariant != null)
+        {
+            @if (User.Identity?.IsAuthenticated ?? false)
+            {
+                <div id="stockInfo" class="mb-2">
+                    @if (firstVariant.StockQuantity > 0)
+                    {
+                        <span class="text-success fw-semibold">✓ Còn hàng</span>
+                        <span class="text-muted ms-2">(<span id="stockCount">@firstVariant.StockQuantity</span> sản phẩm)</span>
+                    }
+                    else
+                    {
+                        <span class="text-danger fw-semibold">✗ Hết hàng</span>
+                    }
+                </div>
+                <div id="stockError" class="alert alert-danger py-2 px-3 mb-2 d-none" role="alert"></div>
+                <form asp-action="AddToCart" method="post" class="d-grid gap-2" id="addToCartForm" novalidate>
+                    <input type="hidden" name="variantId" id="selectedVariantId" value="@firstVariant.Id" />
+                    <div class="pdp-buy-actions">
+                        <input name="quantity" id="quantityInput" class="form-control quantity-input" type="number" min="1" data-max="@firstVariant.StockQuantity" value="1" />
+                        <button class="btn btn-outline-danger" type="submit" id="btnAddToCart" @(firstVariant.StockQuantity <= 0 ? "disabled" : "")>THÊM VÀO GIỎ HÀNG</button>
+                        <button class="btn btn-danger" type="submit" formaction="@Url.Action("BuyNow", "Products")" id="btnBuyNow" @(firstVariant.StockQuantity <= 0 ? "disabled" : "")>MUA NGAY</button>
+                    </div>
+                </form>
+            }
+            else
+            {
+                <input type="hidden" id="selectedVariantIdGuest" value="@firstVariant.Id" />
+                <div class="pdp-buy-actions">
+                    <input class="form-control quantity-input" type="number" min="1" value="1" disabled />
+                    <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@loginReturnUrl" class="btn btn-outline-danger">THÊM VÀO GIỎ HÀNG</a>
+                    <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@loginReturnUrl" class="btn btn-danger">MUA NGAY</a>
+                </div>
+                <small class="text-muted">Vui lòng đăng nhập để thêm giỏ hàng hoặc mua ngay.</small>
+            }
+        }
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const variantInputs = document.querySelectorAll(".variant-option-input");
+            const hiddenVariantId = document.getElementById("selectedVariantId");
+            const primaryImg = document.getElementById("primaryProductImage");
+            const galleryThumbs = document.getElementById("galleryThumbs");
+            const displayPrice = document.getElementById("displayPrice");
+            const displayOldPrice = document.getElementById("displayOldPrice");
+            const stockCount = document.getElementById("stockCount");
+            const stockInfo = document.getElementById("stockInfo");
+            const stockError = document.getElementById("stockError");
+            const quantityInput = document.getElementById("quantityInput");
+            const btnAddToCart = document.getElementById("btnAddToCart");
+            const btnBuyNow = document.getElementById("btnBuyNow");
+            const addToCartForm = document.getElementById("addToCartForm");
+
+            function formatVND(amount) {
+                return new Intl.NumberFormat("vi-VN").format(amount) + " đ";
+            }
+
+            function renderGallery(images) {
+                if (!images || images.length === 0) return;
+                primaryImg.src = images[0];
+                galleryThumbs.innerHTML = "";
+                images.forEach(function (url) {
+                    const img = document.createElement("img");
+                    img.src = url;
+                    img.alt = "@Model.Name";
+                    img.className = "img-thumbnail product-thumb-mini";
+                    img.onclick = function () { changePrimaryImage(this.src); };
+                    galleryThumbs.appendChild(img);
+                });
+            }
+
+            function updateStockUI(stock) {
+                if (!stockInfo) return;
+                if (stock > 0) {
+                    stockInfo.innerHTML = `<span class="text-success fw-semibold">✓ Còn hàng</span> <span class="text-muted ms-2">(<span id="stockCount">${stock}</span> sản phẩm)</span>`;
+                    if (quantityInput) { quantityInput.dataset.max = stock; quantityInput.disabled = false; }
+                    if (btnAddToCart) btnAddToCart.disabled = false;
+                    if (btnBuyNow) btnBuyNow.disabled = false;
+                } else {
+                    stockInfo.innerHTML = `<span class="text-danger fw-semibold">✗ Hết hàng</span>`;
+                    if (quantityInput) quantityInput.disabled = true;
+                    if (btnAddToCart) btnAddToCart.disabled = true;
+                    if (btnBuyNow) btnBuyNow.disabled = true;
+                }
+            }
+
+            // Client-side validation trước khi submit
+            if (addToCartForm) {
+                addToCartForm.addEventListener("submit", function (e) {
+                    if (!stockError || !quantityInput) return;
+                    const qty = parseInt(quantityInput.value) || 1;
+                    const max = parseInt(quantityInput.dataset.max) || 0;
+                    if (qty < 1) {
+                        e.preventDefault();
+                        stockError.textContent = "Số lượng phải ít nhất là 1.";
+                        stockError.classList.remove("d-none");
+                        return;
+                    }
+                    if (max > 0 && qty > max) {
+                        e.preventDefault();
+                        stockError.textContent = `Số lượng không được vượt quá ${max} sản phẩm trong kho.`;
+                        stockError.classList.remove("d-none");
+                        quantityInput.value = max;
+                        return;
+                    }
+                    stockError.classList.add("d-none");
+                });
+
+                // Ẩn lỗi khi người dùng thay đổi số lượng
+                if (quantityInput) {
+                    quantityInput.addEventListener("input", function () {
+                        if (stockError) stockError.classList.add("d-none");
+                    });
+                }
+            }
+
+            variantInputs.forEach(function (input) {
+                input.addEventListener("change", function () {
+                    if (!this.checked) return;
+
+                    if (hiddenVariantId) hiddenVariantId.value = this.value;
+
+                    const price = parseFloat(this.dataset.price) || 0;
+                    if (displayPrice) displayPrice.textContent = formatVND(price);
+                    if (displayOldPrice) displayOldPrice.textContent = formatVND(Math.round(price * 1.1));
+
+                    const stock = parseInt(this.dataset.stock) || 0;
+                    updateStockUI(stock);
+                    if (stockError) stockError.classList.add("d-none");
+
+                    try {
+                        const images = JSON.parse(this.dataset.images || "[]");
+                        renderGallery(images);
+                    } catch (e) {
+                        console.error("Lỗi parse ảnh variant:", e);
+                    }
+                });
+            });
+        });
+    </script>
+}
+
+<section class="mt-4">
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#desc">Mô tả</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#spec">Thông số kỹ thuật</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#review">Đánh giá (@reviews.Count())</button></li>
+    </ul>
+    <div class="tab-content card border-top-0 p-3">
+        <div class="tab-pane fade show active" id="desc" style="white-space:pre-line;">@Model.Description</div>
+        <div class="tab-pane fade" id="spec">
+            <table class="table table-striped mb-0">
+                <tbody>
+                    <tr><th>Hãng</th><td>@Model.Brand?.Name</td></tr>
+                    <tr><th>Danh mục</th><td>@Model.Category?.Name</td></tr>
+                    <tr><th>Phiên bản</th><td>@string.Join(", ", Model.Variants.Select(v => $"{v.Ram}/{v.Rom}/{v.Color}"))</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="tab-pane fade" id="review">
+            @if (User.Identity?.IsAuthenticated ?? false)
+            {
+                <form asp-controller="Reviews" asp-action="Create" method="post" class="mb-3">
+                    <input type="hidden" name="productId" value="@Model.Id" />
+                    <div class="row g-2">
+                        <div class="col-md-2"><input class="form-control" name="rating" min="1" max="5" value="5" /></div>
+                        <div class="col-md-8"><input class="form-control" name="comment" placeholder="Nhập nhận xét của bạn..." /></div>
+                        <div class="col-md-2"><button class="btn btn-danger w-100">Gửi</button></div>
+                    </div>
+                </form>
+                <div class="alert alert-light border small">
+                    Bạn chỉ có thể gửi đánh giá khi đã từng mua sản phẩm này.
+                </div>
+            }
+            @if (!reviews.Any())
+            {
+                <p class="mb-0 text-muted">Chưa có đánh giá nào.</p>
+            }
+            else
+            {
+                <div class="d-grid gap-2">
+                    @foreach (var review in reviews)
+                    {
+                        <div class="border rounded p-2"><strong>@review.Rating sao</strong> - @review.Comment</div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="mt-4">
+    <h2 class="section-title">Sản phẩm tương tự</h2>
+    <div class="row g-3 row-cols-2 row-cols-md-4">
+        @foreach (var r in related)
+        {
+            <div class="col">
+                <partial name="_ProductCard" model="r" />
+            </div>
+        }
+    </div>
+</section>

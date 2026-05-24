@@ -1,0 +1,117 @@
+@model QDPhone.Web.Models.ViewModels.CartViewModel
+@{
+    ViewData["Title"] = "Giỏ hàng";
+}
+<section class="cart-page">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h2 class="mb-0">Giỏ hàng của bạn</h2>
+        <span class="text-muted">@Model.Items.Count sản phẩm</span>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center gap-2 mb-3" role="alert">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-exclamation-triangle-fill flex-shrink-0" viewBox="0 0 16 16">
+                <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+            </svg>
+            <span>@TempData["ErrorMessage"]</span>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Đóng"></button>
+        </div>
+    }
+
+    @if (!Model.Items.Any())
+    {
+        <div class="card p-4 text-center">
+            <h5>Giỏ hàng đang trống</h5>
+            <p class="text-muted mb-3">Thêm sản phẩm vào giỏ để tiếp tục thanh toán.</p>
+            <a class="btn btn-danger mx-auto" style="max-width:220px;" asp-controller="Products" asp-action="Index">Tiếp tục mua sắm</a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+            <div class="col-12 col-lg-8">
+                <div class="card p-3">
+                    <div class="table-responsive">
+                        <table class="table align-middle cart-table mb-0">
+                            <thead><tr><th>Sản phẩm</th><th>Biến thể</th><th>Đơn giá</th><th>SL</th><th>Tổng</th><th></th></tr></thead>
+                            <tbody>
+                                @foreach (var item in Model.Items)
+                                {
+                                    <tr>
+                                        <td class="fw-semibold">@item.ProductName</td>
+                                        <td>@item.VariantLabel</td>
+                                        <td>@item.UnitPrice.ToString("N0") đ</td>
+                                        <td>
+                                            <form asp-action="Update" method="post" class="cart-qty-form" novalidate onsubmit="return validateCartQty(this, @item.StockQuantity)">
+                                                <input type="hidden" name="cartItemId" value="@item.CartItemId" />
+                                                <input class="form-control form-control-sm cart-qty-input" type="number" min="1" data-max="@item.StockQuantity" name="quantity" value="@item.Quantity" />
+                                                <button class="btn btn-sm btn-outline-dark">Cập nhật</button>
+                                            </form>
+                                            @if (item.StockQuantity > 0)
+                                            {
+                                                <small class="text-muted d-block mt-1">Tồn kho: @item.StockQuantity</small>
+                                            }
+                                            else
+                                            {
+                                                <small class="text-danger d-block mt-1">⚠ Hết hàng</small>
+                                            }
+                                        </td>
+                                        <td class="fw-semibold text-danger">@item.LineTotal.ToString("N0") đ</td>
+                                        <td>
+                                            <form asp-action="Remove" method="post">
+                                                <input type="hidden" name="cartItemId" value="@item.CartItemId" />
+                                                <button class="btn btn-sm btn-outline-danger">Xóa</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-4">
+                <div class="card p-3 cart-summary">
+                    <h5 class="mb-3">Tóm tắt đơn hàng</h5>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tạm tính</span>
+                        <strong>@Model.SubTotal.ToString("N0") đ</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Phí vận chuyển</span>
+                        <span class="text-success">Miễn phí</span>
+                    </div>
+                    <hr />
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="fw-semibold">Tổng thanh toán</span>
+                        <span class="fs-5 fw-bold text-danger">@Model.SubTotal.ToString("N0") đ</span>
+                    </div>
+                    <a class="btn btn-danger w-100" asp-controller="Checkout" asp-action="Index">Tiến hành thanh toán</a>
+                    <a class="btn btn-outline-secondary w-100 mt-2" asp-controller="Products" asp-action="Index">Tiếp tục mua sắm</a>
+                </div>
+            </div>
+        </div>
+    }
+</section>
+
+@section Scripts {
+    <script>
+        function validateCartQty(form, stock) {
+            const input = form.querySelector(".cart-qty-input");
+            const qty = parseInt(input.value) || 1;
+            if (qty < 1) {
+                alert("Số lượng phải ít nhất là 1.");
+                input.value = 1;
+                return false;
+            }
+            if (stock > 0 && qty > stock) {
+                alert("Số lượng không được vượt quá " + stock + " sản phẩm trong kho.");
+                input.value = stock;
+                return false;
+            }
+            return true;
+        }
+    </script>
+}
