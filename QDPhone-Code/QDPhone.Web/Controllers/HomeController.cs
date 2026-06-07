@@ -23,7 +23,7 @@ public class HomeController : Controller
         ViewData["MetaDescription"] = "QDPhone - Mua điện thoại chính hãng, giá tốt, nhiều ưu đãi.";
         var vm = await _cache.GetOrCreateAsync("home-page-vm", async entry =>
         {
-            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1);
 
             var topProductIds = await _db.OrderItems
                 .GroupBy(oi => oi.ProductVariant!.ProductId)

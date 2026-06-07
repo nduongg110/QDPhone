@@ -56,12 +56,57 @@ public class OrderService : IOrderService
 
     public async Task<bool> UpdateOrderStatusAsync(int orderId, string status)
     {
-        var order = await _db.Orders.FindAsync(orderId);
+        var order = await _db.Orders
+            .Include(x => x.Items)
+            .FirstOrDefaultAsync(x => x.Id == orderId);
         if (order == null) return false;
 
+        var previousStatus = order.Status;
         order.Status = status;
         await _db.SaveChangesAsync();
+
+        // Hoàn tồn kho khi đơn bị huỷ (chỉ hoàn nếu trước đó stock đã bị trừ)
+        // Stock bị trừ khi đặt hàng (Pending/PendingPayment/Paid/Shipping...)
+        // Không hoàn nếu đơn đã ở PaymentFailed (stock đã được hoàn bởi RestoreStockForFailedPaymentAsync)
+        if (status == "Cancelled" && previousStatus != "PaymentFailed" && previousStatus != "Cancelled")
+        {
+            await RestoreStockOnCancelAsync(orderId, previousStatus);
+        }
+
         return true;
+    }
+
+    private async Task RestoreStockOnCancelAsync(int orderId, string previousStatus)
+    {
+        var restoreReason = $"OrderCancelledRestore:{orderId}";
+        var alreadyRestored = await _db.InventoryTransactions.AnyAsync(x => x.Reason == restoreReason);
+        if (alreadyRestored) return;
+
+        var order = await _db.Orders
+            .Include(x => x.Items)
+            .FirstOrDefaultAsync(x => x.Id == orderId);
+        if (order == null || !order.Items.Any()) return;
+
+        var variantIds = order.Items.Select(i => i.ProductVariantId).Distinct().ToList();
+        var variants = await _db.ProductVariants
+            .Where(v => variantIds.Contains(v.Id))
+            .ToDictionaryAsync(v => v.Id);
+
+        foreach (var item in order.Items)
+        {
+            if (!variants.TryGetValue(item.ProductVariantId, out var variant)) continue;
+
+            variant.StockQuantity += item.Quantity;
+
+            _db.InventoryTransactions.Add(new InventoryTransaction
+            {
+                ProductVariantId = variant.Id,
+                DeltaQuantity = item.Quantity,
+                Reason = restoreReason
+            });
+        }
+
+        await _db.SaveChangesAsync();
     }
 
     public async Task<bool> RestoreStockForFailedPaymentAsync(int orderId)

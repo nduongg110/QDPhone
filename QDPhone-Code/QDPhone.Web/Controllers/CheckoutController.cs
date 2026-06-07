@@ -5,6 +5,7 @@ using QDPhone.Web.Data;
 using QDPhone.Web.Services;
 using System.Globalization;
 using System.Security.Claims;
+using Microsoft.Extensions.Caching.Memory;
 using System.Text.Json;
 
 namespace QDPhone.Web.Controllers;
@@ -19,6 +20,7 @@ public class CheckoutController : Controller
     private readonly ApplicationDbContext _db;
     private readonly ILogger<CheckoutController> _logger;
     private readonly INotificationService _notificationService;
+    private readonly IMemoryCache _cache;
 
     public CheckoutController(
         IOrderService orderService,
@@ -27,7 +29,8 @@ public class CheckoutController : Controller
         ICartService cartService,
         ApplicationDbContext db,
         ILogger<CheckoutController> logger,
-        INotificationService notificationService)
+        INotificationService notificationService,
+        IMemoryCache cache)
     {
         _orderService = orderService;
         _paymentService = paymentService;
@@ -36,6 +39,7 @@ public class CheckoutController : Controller
         _db = db;
         _logger = logger;
         _notificationService = notificationService;
+        _cache = cache;
     }
 
     [HttpGet]
@@ -150,6 +154,9 @@ public class CheckoutController : Controller
         var orderItemsCod = await _db.OrderItems.Where(x => x.OrderId == order.Id).ToListAsync();
         await _notificationService.NotifyOrderCreatedAsync(userId, order.Id, order.TotalAmount, orderItemsCod);
 
+        // Xoá cache trang chủ để tồn kho cập nhật ngay
+        _cache.Remove("home-page-vm");
+
         TempData["Message"] = $"Đơn hàng #{order.Id} đã được tạo.";
         return RedirectToAction("Success", "Orders", new { id = order.Id });
     }
@@ -210,6 +217,9 @@ public class CheckoutController : Controller
 
         var orderItemsPayOs = await _db.OrderItems.Where(x => x.OrderId == order.Id).ToListAsync();
         await _notificationService.NotifyOrderCreatedAsync(userId, order.Id, order.TotalAmount, orderItemsPayOs);
+
+        // Xoá cache trang chủ để tồn kho cập nhật ngay
+        _cache.Remove("home-page-vm");
 
         try
         {

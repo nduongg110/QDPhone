@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using QDPhone.Web.Data;
 using QDPhone.Web.Services;
 using System.Globalization;
+using Microsoft.Extensions.Caching.Memory;
 using System.Security.Claims;
 
 namespace QDPhone.Web.Areas.Admin.Controllers;
@@ -18,13 +19,15 @@ public class AdminController : Controller
     private readonly IExportService _exportService;
     private readonly INotificationService _notificationService;
     private readonly IOrderService _orderService;
+    private readonly IMemoryCache _cache;
 
-    public AdminController(ApplicationDbContext db, IExportService exportService, INotificationService notificationService, IOrderService orderService)
+    public AdminController(ApplicationDbContext db, IExportService exportService, INotificationService notificationService, IOrderService orderService, IMemoryCache cache)
     {
         _db = db;
         _exportService = exportService;
         _notificationService = notificationService;
         _orderService = orderService;
+        _cache = cache;
     }
 
     [HttpGet("")]
@@ -177,6 +180,9 @@ public class AdminController : Controller
         var success = await _orderService.UpdateOrderStatusAsync(orderId, status);
         if (!success)
             return NotFound("Không tìm thấy đơn hàng.");
+
+        // Xoá cache trang chủ để tồn kho hiển thị chính xác ngay sau khi cập nhật
+        _cache.Remove("home-page-vm");
 
         return Ok(new { message = "Đã cập nhật trạng thái đơn hàng." });
     }

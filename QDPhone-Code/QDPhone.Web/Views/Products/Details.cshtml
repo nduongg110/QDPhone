@@ -68,12 +68,14 @@
 
 <section class="row g-4">
     <div class="col-lg-6">
-        <div class="card p-3">
-            <img id="primaryProductImage" src="@(initialGallery.FirstOrDefault() ?? "")" class="img-fluid rounded" alt="@Model.Name" />
-            <div id="galleryThumbs" class="d-flex gap-2 mt-3">
+        <div class="card pdp-gallery-card">
+            <div class="pdp-primary-wrap">
+                <img id="primaryProductImage" src="@(initialGallery.FirstOrDefault() ?? "")" alt="@Model.Name" />
+            </div>
+            <div id="galleryThumbs" class="pdp-thumbs">
                 @foreach (var photo in initialGallery)
                 {
-                    <img src="@photo" class="img-thumbnail product-thumb-mini" alt="@Model.Name" onclick="changePrimaryImage(this.src)" />
+                    <img src="@photo" class="product-thumb-mini@(photo == initialGallery.FirstOrDefault() ? " active" : "")" alt="@Model.Name" onclick="changePrimaryImage(this.src)" />
                 }
             </div>
         </div>
@@ -174,11 +176,11 @@
                 if (!images || images.length === 0) return;
                 primaryImg.src = images[0];
                 galleryThumbs.innerHTML = "";
-                images.forEach(function (url) {
+                images.forEach(function (url, idx) {
                     const img = document.createElement("img");
                     img.src = url;
                     img.alt = "@Model.Name";
-                    img.className = "img-thumbnail product-thumb-mini";
+                    img.className = "product-thumb-mini" + (idx === 0 ? " active" : "");
                     img.onclick = function () { changePrimaryImage(this.src); };
                     galleryThumbs.appendChild(img);
                 });

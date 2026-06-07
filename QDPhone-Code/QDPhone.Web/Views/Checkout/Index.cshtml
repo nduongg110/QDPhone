@@ -4,11 +4,6 @@
 }
 <h2 class="mb-3">Thanh toán</h2>
 
-@if (TempData["Message"] is string message)
-{
-    <div class="alert alert-info">@message</div>
-}
-
 @{
     var appliedCode = ViewBag.AppliedCouponCode as string;
     var appliedDiscount = ViewBag.AppliedCouponDiscount as string;

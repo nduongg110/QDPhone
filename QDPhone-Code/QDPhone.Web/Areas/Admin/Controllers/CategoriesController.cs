@@ -23,6 +23,12 @@ public class CategoriesController : Controller
         _cache = cache;
     }
 
+    private void InvalidateCategoryCaches()
+    {
+        _cache.Remove("categories-list");
+        _cache.Remove("home-page-vm");
+    }
+
     [HttpGet("")]
     public async Task<IActionResult> Index() => View(await _db.Categories.OrderBy(x => x.Name).ToListAsync());
 
@@ -38,7 +44,7 @@ public class CategoriesController : Controller
             model.ImageUrl = await SaveUploadAsync(imageFile, "categories");
         _db.Categories.Add(model);
         await _db.SaveChangesAsync();
-        _cache.Remove("home-page-vm");
+        InvalidateCategoryCaches();
         return RedirectToAction(nameof(Index));
     }
 
@@ -64,7 +70,7 @@ public class CategoriesController : Controller
         else
             category.ImageUrl = model.ImageUrl;
         await _db.SaveChangesAsync();
-        _cache.Remove("home-page-vm");
+        InvalidateCategoryCaches();
         return RedirectToAction(nameof(Index));
     }
 
@@ -75,7 +81,7 @@ public class CategoriesController : Controller
         if (category == null) return RedirectToAction(nameof(Index));
         _db.Categories.Remove(category);
         await _db.SaveChangesAsync();
-        _cache.Remove("home-page-vm");
+        InvalidateCategoryCaches();
         return RedirectToAction(nameof(Index));
     }
 
@@ -93,4 +99,3 @@ public class CategoriesController : Controller
         return $"/uploads/{folderName}/{fileName}";
     }
 }
-

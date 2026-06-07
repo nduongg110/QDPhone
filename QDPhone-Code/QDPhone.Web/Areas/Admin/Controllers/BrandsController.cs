@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using QDPhone.Web.Data;
 using QDPhone.Web.Models.Entities;
 
@@ -13,11 +14,19 @@ public class BrandsController : Controller
 {
     private readonly ApplicationDbContext _db;
     private readonly IWebHostEnvironment _env;
+    private readonly IMemoryCache _cache;
 
-    public BrandsController(ApplicationDbContext db, IWebHostEnvironment env)
+    public BrandsController(ApplicationDbContext db, IWebHostEnvironment env, IMemoryCache cache)
     {
         _db = db;
         _env = env;
+        _cache = cache;
+    }
+
+    private void InvalidateBrandCaches()
+    {
+        _cache.Remove("brands-list");
+        _cache.Remove("home-page-vm");
     }
 
     [HttpGet("")]
@@ -35,6 +44,7 @@ public class BrandsController : Controller
             model.ImageUrl = await SaveUploadAsync(imageFile, "brands");
         _db.Brands.Add(model);
         await _db.SaveChangesAsync();
+        InvalidateBrandCaches();
         return RedirectToAction(nameof(Index));
     }
 
@@ -60,6 +70,7 @@ public class BrandsController : Controller
         else
             brand.ImageUrl = model.ImageUrl;
         await _db.SaveChangesAsync();
+        InvalidateBrandCaches();
         return RedirectToAction(nameof(Index));
     }
 
@@ -70,6 +81,7 @@ public class BrandsController : Controller
         if (brand == null) return RedirectToAction(nameof(Index));
         _db.Brands.Remove(brand);
         await _db.SaveChangesAsync();
+        InvalidateBrandCaches();
         return RedirectToAction(nameof(Index));
     }
 
@@ -87,4 +99,3 @@ public class BrandsController : Controller
         return $"/uploads/{folderName}/{fileName}";
     }
 }
-

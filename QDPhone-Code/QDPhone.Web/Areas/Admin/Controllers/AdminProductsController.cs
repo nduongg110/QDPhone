@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using QDPhone.Web.Data;
 using QDPhone.Web.Models.Entities;
 using QDPhone.Web.Models.ViewModels;
@@ -14,11 +15,19 @@ public class AdminProductsController : Controller
 {
     private readonly ApplicationDbContext _db;
     private readonly IWebHostEnvironment _env;
+    private readonly IMemoryCache _cache;
 
-    public AdminProductsController(ApplicationDbContext db, IWebHostEnvironment env)
+    public AdminProductsController(ApplicationDbContext db, IWebHostEnvironment env, IMemoryCache cache)
     {
         _db = db;
         _env = env;
+        _cache = cache;
+    }
+
+    /// <summary>Xóa tất cả cache liên quan đến sản phẩm trên trang người dùng.</summary>
+    private void InvalidateProductCaches()
+    {
+        _cache.Remove("home-page-vm");
     }
 
     [HttpGet("")]
@@ -138,6 +147,7 @@ public class AdminProductsController : Controller
             });
         }
         await _db.SaveChangesAsync();
+        InvalidateProductCaches();
         return RedirectToAction(nameof(Index));
     }
 
@@ -227,6 +237,7 @@ public class AdminProductsController : Controller
         }
 
         await _db.SaveChangesAsync();
+        InvalidateProductCaches();
         return RedirectToAction(nameof(Index));
     }
 
@@ -254,6 +265,7 @@ public class AdminProductsController : Controller
         _db.ProductImages.RemoveRange(product.Images);
         _db.Products.Remove(product);
         await _db.SaveChangesAsync();
+        InvalidateProductCaches();
         return RedirectToAction(nameof(Index));
     }
 
@@ -423,6 +435,7 @@ public class AdminProductsController : Controller
             StockQuantity = Math.Max(0, stockQuantity)
         });
         await _db.SaveChangesAsync();
+        InvalidateProductCaches();
         return RedirectToAction(nameof(Variants), new { productId });
     }
 
@@ -437,6 +450,7 @@ public class AdminProductsController : Controller
         variant.Price = Math.Max(0, price);
         variant.StockQuantity = Math.Max(0, stockQuantity);
         await _db.SaveChangesAsync();
+        InvalidateProductCaches();
         return RedirectToAction(nameof(Variants), new { productId });
     }
 
@@ -449,6 +463,7 @@ public class AdminProductsController : Controller
         if (variant == null) return RedirectToAction(nameof(Variants), new { productId });
         _db.ProductVariants.Remove(variant);
         await _db.SaveChangesAsync();
+        InvalidateProductCaches();
         return RedirectToAction(nameof(Variants), new { productId });
     }
 

@@ -19,6 +19,10 @@
 window.changePrimaryImage = function (src) {
     const img = document.getElementById("primaryProductImage");
     if (img) img.src = src;
+    // Update active thumbnail highlight
+    document.querySelectorAll(".product-thumb-mini").forEach(function (thumb) {
+        thumb.classList.toggle("active", thumb.src === src);
+    });
 };
 
 function pad(num) {
