@@ -9,32 +9,30 @@
     var related = (IEnumerable<QDPhone.Web.Models.Entities.Product>)ViewBag.RelatedProducts;
     var loginReturnUrl = Url.Action("Details", "Products", new { id = Model.Id }) ?? "/";
 
-    // Xây dict: variantId -> danh sách imageUrl (primary đầu tiên)
+    // Ảnh chung dùng cho tất cả biến thể
+    var sharedImgs = Model.Images
+        .Where(i => i.VariantId == null)
+        .OrderByDescending(i => i.IsPrimary)
+        .ThenBy(i => i.SortOrder)
+        .Select(i => i.ImageUrl)
+        .ToList();
+
+    // Xây dict: variantId -> danh sách imageUrl (ảnh riêng trước, ảnh chung sau)
     var variantImageMap = variants.ToDictionary(
         v => v.Id,
         v =>
         {
-            var imgs = Model.Images
+            var variantImgs = Model.Images
                 .Where(i => i.VariantId == v.Id)
                 .OrderByDescending(i => i.IsPrimary)
                 .ThenBy(i => i.SortOrder)
                 .Select(i => i.ImageUrl)
-                .Take(6)
                 .ToList();
 
-            // Fallback: ảnh chung của product (VariantId == null)
-            if (!imgs.Any())
-            {
-                imgs = Model.Images
-                    .Where(i => i.VariantId == null)
-                    .OrderByDescending(i => i.IsPrimary)
-                    .ThenBy(i => i.SortOrder)
-                    .Select(i => i.ImageUrl)
-                    .Take(6)
-                    .ToList();
-            }
+            // Gộp: ảnh riêng biến thể trước, ảnh chung sau, tối đa 8 ảnh
+            var imgs = variantImgs.Concat(sharedImgs).Distinct().ToList();
 
-            // Cuối cùng fallback picsum
+            // Fallback picsum nếu không có gì cả
             if (!imgs.Any())
             {
                 imgs = Enumerable.Range(1, 5)
@@ -83,7 +81,7 @@
 
     <div class="col-lg-6">
         <h1 class="h3 fw-bold">@Model.Name</h1>
-        <div class="text-muted mb-2">⭐ 4.8 (245 đánh giá) | Đã bán: 1,234 | Mã SP: SP@Model.Id</div>
+        <div class="text-muted mb-2">⭐ 4.8 (245 đánh giá) | Đã bán: 650 | Mã SP: 12</div>
         <div class="mb-2">
             <span id="displayPrice" class="price-new fs-2">@minPrice.ToString("N0") đ</span>
             <span id="displayOldPrice" class="price-old ms-2">@oldPrice.ToString("N0") đ</span>
@@ -172,8 +170,36 @@
                 return new Intl.NumberFormat("vi-VN").format(amount) + " đ";
             }
 
+            // --- Auto-slide ---
+            let slideImages = [];
+            let slideIndex = 0;
+            let slideTimer = null;
+
+            function startSlide() {
+                stopSlide();
+                if (slideImages.length <= 1) return;
+                slideTimer = setInterval(function () {
+                    slideIndex = (slideIndex + 1) % slideImages.length;
+                    setActiveSlide(slideIndex);
+                }, 3000);
+            }
+
+            function stopSlide() {
+                if (slideTimer) { clearInterval(slideTimer); slideTimer = null; }
+            }
+
+            function setActiveSlide(idx) {
+                primaryImg.src = slideImages[idx];
+                const thumbs = galleryThumbs.querySelectorAll(".product-thumb-mini");
+                thumbs.forEach(function (t, i) { t.classList.toggle("active", i === idx); });
+                // Scroll thumbnail vào view
+                if (thumbs[idx]) thumbs[idx].scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+            }
+
             function renderGallery(images) {
                 if (!images || images.length === 0) return;
+                slideImages = images;
+                slideIndex = 0;
                 primaryImg.src = images[0];
                 galleryThumbs.innerHTML = "";
                 images.forEach(function (url, idx) {
@@ -181,10 +207,20 @@
                     img.src = url;
                     img.alt = "@Model.Name";
                     img.className = "product-thumb-mini" + (idx === 0 ? " active" : "");
-                    img.onclick = function () { changePrimaryImage(this.src); };
+                    img.onclick = function () {
+                        stopSlide();
+                        slideIndex = idx;
+                        setActiveSlide(idx);
+                        startSlide();
+                    };
                     galleryThumbs.appendChild(img);
                 });
+                startSlide();
             }
+
+            // Dừng slide khi hover ảnh chính, tiếp tục khi rời
+            primaryImg.addEventListener("mouseenter", stopSlide);
+            primaryImg.addEventListener("mouseleave", startSlide);
 
             function updateStockUI(stock) {
                 if (!stockInfo) return;
@@ -231,6 +267,21 @@
                 }
             }
 
+            // Khởi tạo slide cho gallery ban đầu
+            const initThumbs = galleryThumbs.querySelectorAll(".product-thumb-mini");
+            slideImages = Array.from(initThumbs).map(function (t) { return t.src; });
+            slideIndex = 0;
+            // Gán lại onclick cho thumb ban đầu
+            initThumbs.forEach(function (t, idx) {
+                t.onclick = function () {
+                    stopSlide();
+                    slideIndex = idx;
+                    setActiveSlide(idx);
+                    startSlide();
+                };
+            });
+            startSlide();
+
             variantInputs.forEach(function (input) {
                 input.addEventListener("change", function () {
                     if (!this.checked) return;
@@ -275,12 +326,16 @@
             </table>
         </div>
         <div class="tab-pane fade" id="review">
+            @if (TempData["Message"] != null)
+            {
+                <div class="alert alert-info mb-3">@TempData["Message"]</div>
+            }
             @if (User.Identity?.IsAuthenticated ?? false)
             {
                 <form asp-controller="Reviews" asp-action="Create" method="post" class="mb-3">
                     <input type="hidden" name="productId" value="@Model.Id" />
                     <div class="row g-2">
-                        <div class="col-md-2"><input class="form-control" name="rating" min="1" max="5" value="5" /></div>
+                        <div class="col-md-2"><input class="form-control" name="rating" type="number" min="1" max="5" value="5" /></div>
                         <div class="col-md-8"><input class="form-control" name="comment" placeholder="Nhập nhận xét của bạn..." /></div>
                         <div class="col-md-2"><button class="btn btn-danger w-100">Gửi</button></div>
                     </div>

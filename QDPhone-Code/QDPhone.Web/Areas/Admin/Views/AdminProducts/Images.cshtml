@@ -4,11 +4,22 @@
     var selectedVariantId = ViewBag.SelectedVariantId as int?;
     var variants = Model.Variants.OrderBy(v => v.Price).ToList();
 
-    // Lấy ảnh theo scope: nếu chọn variant thì lấy ảnh của variant đó, không thì ảnh chung
-    var orderedImages = Model.Images
-        .Where(x => x.VariantId == selectedVariantId)
+    // Ảnh chung (không gắn với biến thể nào)
+    var sharedImages = Model.Images
+        .Where(x => x.VariantId == null)
         .OrderBy(x => x.SortOrder)
         .ToList();
+
+    // Ảnh riêng của biến thể đang chọn (nếu có)
+    var variantImages = selectedVariantId.HasValue
+        ? Model.Images
+            .Where(x => x.VariantId == selectedVariantId)
+            .OrderBy(x => x.SortOrder)
+            .ToList()
+        : new List<QDPhone.Web.Models.Entities.ProductImage>();
+
+    // orderedImages dùng cho tab "Ảnh chung" (không chọn variant)
+    var orderedImages = sharedImages;
 }
 
 <div class="page-header d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
@@ -64,86 +75,162 @@
             <small class="text-muted">Ảnh sẽ được gán cho biến thể: <strong>@v?.Color / @v?.Ram / @v?.Rom</strong></small>
         </div>
     }
-    else
-    {
-    }
 </form>
 
-@if (!orderedImages.Any())
+@if (selectedVariantId.HasValue)
 {
-    <div class="admin-card">
-        <div class="alert alert-warning mb-0">
-            Chưa có ảnh nào cho @(selectedVariantId.HasValue ? "biến thể này" : "ảnh chung").
-        </div>
+    var selectedVariant = variants.FirstOrDefault(x => x.Id == selectedVariantId);
+
+    @* --- Ảnh biến thể --- *@
+    <div class="mb-2">
+        <h6 class="fw-semibold text-danger">Ảnh riêng của biến thể: @selectedVariant?.Color / @selectedVariant?.Ram / @selectedVariant?.Rom</h6>
     </div>
+
+    @if (!variantImages.Any())
+    {
+        <div class="admin-card mb-4">
+            <div class="alert alert-warning mb-0">Chưa có ảnh riêng cho biến thể này.</div>
+        </div>
+    }
+    else
+    {
+        <div class="row g-3 mb-4">
+            @foreach (var image in variantImages)
+            {
+                <div class="col-12 col-md-6 col-xl-4">
+                    <div class="admin-card h-100 p-2">
+                        <img src="@image.ImageUrl" class="card-img-top" style="height:220px;object-fit:cover;" alt="@Model.Name" />
+                        <div class="card-body d-grid gap-2">
+                            <div class="small text-muted text-break">@image.ImageUrl</div>
+                            <form asp-action="UpdateSortOrder" asp-route-productId="@Model.Id" method="post" class="d-flex gap-2">
+                                <input type="hidden" name="imageId" value="@image.Id" />
+                                <input type="hidden" name="variantId" value="@selectedVariantId" />
+                                <input type="number" min="0" class="form-control form-control-sm" name="sortOrder" value="@image.SortOrder" />
+                                <button class="btn btn-sm btn-outline-primary" type="submit">Lưu STT</button>
+                            </form>
+                            <form asp-action="SetPrimaryImage" asp-route-productId="@Model.Id" method="post">
+                                <input type="hidden" name="imageId" value="@image.Id" />
+                                <input type="hidden" name="variantId" value="@selectedVariantId" />
+                                <button class="btn btn-sm @(image.IsPrimary ? "btn-success" : "btn-outline-success") w-100" type="submit">
+                                    @(image.IsPrimary ? "Ảnh chính" : "Đặt làm ảnh chính")
+                                </button>
+                            </form>
+                            <form asp-action="MoveImage" asp-route-productId="@Model.Id" method="post" class="d-flex gap-2">
+                                <input type="hidden" name="imageId" value="@image.Id" />
+                                <input type="hidden" name="variantId" value="@selectedVariantId" />
+                                <select name="targetScope" class="form-select form-select-sm" onchange="handleMoveScope(this)">
+                                    <option value="">-- Chuyển sang... --</option>
+                                    <option value="shared">📦 Ảnh chung</option>
+                                    @foreach (var v in variants)
+                                    {
+                                        if (v.Id == selectedVariantId) continue;
+                                        <option value="variant" data-variant-id="@v.Id">🎨 @v.Color / @v.Ram / @v.Rom</option>
+                                    }
+                                </select>
+                                <input type="hidden" name="targetVariantId" class="target-variant-id" value="" />
+                                <button class="btn btn-sm btn-outline-warning flex-shrink-0" type="submit">Chuyển</button>
+                            </form>
+                            <form asp-action="DeleteImage" asp-route-productId="@Model.Id" method="post" onsubmit="return confirm('Xóa ảnh này?');">
+                                <input type="hidden" name="imageId" value="@image.Id" />
+                                <input type="hidden" name="variantId" value="@selectedVariantId" />
+                                <button class="btn btn-sm btn-outline-danger w-100" type="submit">Xóa ảnh</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    @* --- Ảnh chung (hiển thị read-only khi đang xem biến thể) --- *@
+    <hr />
+    <div class="mb-2">
+        <h6 class="fw-semibold text-secondary">Ảnh chung (dùng cho tất cả biến thể)</h6>
+        <small class="text-muted">Những ảnh này hiển thị cho mọi biến thể. Để quản lý, chuyển về tab <strong>Ảnh chung</strong>.</small>
+    </div>
+
+    @if (!sharedImages.Any())
+    {
+        <div class="admin-card">
+            <div class="alert alert-info mb-0">Chưa có ảnh chung nào.</div>
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+            @foreach (var image in sharedImages)
+            {
+                <div class="col-12 col-md-6 col-xl-4">
+                    <div class="admin-card h-100 p-2" style="opacity:0.85;">
+                        <img src="@image.ImageUrl" class="card-img-top" style="height:220px;object-fit:cover;" alt="@Model.Name" />
+                        <div class="card-body">
+                            <div class="small text-muted text-break">@image.ImageUrl</div>
+                            <div class="mt-2">
+                                <span class="badge bg-secondary">Ảnh chung @(image.IsPrimary ? "· Ảnh chính" : "")</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
 }
 else
 {
-    <div class="row g-3">
-        @foreach (var image in orderedImages)
-        {
-            <div class="col-12 col-md-6 col-xl-4">
-                <div class="admin-card h-100 p-2">
-                    <img src="@image.ImageUrl" class="card-img-top" style="height:220px;object-fit:cover;" alt="@Model.Name" />
-                    <div class="card-body d-grid gap-2">
-                        <div class="small text-muted text-break">@image.ImageUrl</div>
+    @* --- Tab Ảnh chung --- *@
+    @if (!orderedImages.Any())
+    {
+        <div class="admin-card">
+            <div class="alert alert-warning mb-0">Chưa có ảnh chung nào.</div>
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+            @foreach (var image in orderedImages)
+            {
+                <div class="col-12 col-md-6 col-xl-4">
+                    <div class="admin-card h-100 p-2">
+                        <img src="@image.ImageUrl" class="card-img-top" style="height:220px;object-fit:cover;" alt="@Model.Name" />
+                        <div class="card-body d-grid gap-2">
+                            <div class="small text-muted text-break">@image.ImageUrl</div>
 
-                        <form asp-action="UpdateSortOrder" asp-route-productId="@Model.Id" method="post" class="d-flex gap-2">
-                            <input type="hidden" name="imageId" value="@image.Id" />
-                            @if (selectedVariantId.HasValue)
-                            {
-                                <input type="hidden" name="variantId" value="@selectedVariantId" />
-                            }
-                            <input type="number" min="0" class="form-control form-control-sm" name="sortOrder" value="@image.SortOrder" />
-                            <button class="btn btn-sm btn-outline-primary" type="submit">Lưu STT</button>
-                        </form>
+                            <form asp-action="UpdateSortOrder" asp-route-productId="@Model.Id" method="post" class="d-flex gap-2">
+                                <input type="hidden" name="imageId" value="@image.Id" />
+                                <input type="number" min="0" class="form-control form-control-sm" name="sortOrder" value="@image.SortOrder" />
+                                <button class="btn btn-sm btn-outline-primary" type="submit">Lưu STT</button>
+                            </form>
 
-                        <form asp-action="SetPrimaryImage" asp-route-productId="@Model.Id" method="post">
-                            <input type="hidden" name="imageId" value="@image.Id" />
-                            @if (selectedVariantId.HasValue)
-                            {
-                                <input type="hidden" name="variantId" value="@selectedVariantId" />
-                            }
-                            <button class="btn btn-sm @(image.IsPrimary ? "btn-success" : "btn-outline-success") w-100" type="submit">
-                                @(image.IsPrimary ? "Ảnh chính" : "Đặt làm ảnh chính")
-                            </button>
-                        </form>
+                            <form asp-action="SetPrimaryImage" asp-route-productId="@Model.Id" method="post">
+                                <input type="hidden" name="imageId" value="@image.Id" />
+                                <button class="btn btn-sm @(image.IsPrimary ? "btn-success" : "btn-outline-success") w-100" type="submit">
+                                    @(image.IsPrimary ? "Ảnh chính" : "Đặt làm ảnh chính")
+                                </button>
+                            </form>
 
-                        <form asp-action="MoveImage" asp-route-productId="@Model.Id" method="post" class="d-flex gap-2">
-                            <input type="hidden" name="imageId" value="@image.Id" />
-                            @if (selectedVariantId.HasValue)
-                            {
-                                <input type="hidden" name="variantId" value="@selectedVariantId" />
-                            }
-                            <select name="targetScope" class="form-select form-select-sm" onchange="handleMoveScope(this)">
-                                <option value="">-- Chuyển sang... --</option>
-                                @if (selectedVariantId.HasValue)
-                                {
-                                    <option value="shared">📦 Ảnh chung</option>
-                                }
-                                @foreach (var v in variants)
-                                {
-                                    if (v.Id == selectedVariantId) continue;
-                                    <option value="variant" data-variant-id="@v.Id">🎨 @v.Color / @v.Ram / @v.Rom</option>
-                                }
-                            </select>
-                            <input type="hidden" name="targetVariantId" class="target-variant-id" value="" />
-                            <button class="btn btn-sm btn-outline-warning flex-shrink-0" type="submit">Chuyển</button>
-                        </form>
+                            <form asp-action="MoveImage" asp-route-productId="@Model.Id" method="post" class="d-flex gap-2">
+                                <input type="hidden" name="imageId" value="@image.Id" />
+                                <select name="targetScope" class="form-select form-select-sm" onchange="handleMoveScope(this)">
+                                    <option value="">-- Chuyển sang... --</option>
+                                    @foreach (var v in variants)
+                                    {
+                                        <option value="variant" data-variant-id="@v.Id">🎨 @v.Color / @v.Ram / @v.Rom</option>
+                                    }
+                                </select>
+                                <input type="hidden" name="targetVariantId" class="target-variant-id" value="" />
+                                <button class="btn btn-sm btn-outline-warning flex-shrink-0" type="submit">Chuyển</button>
+                            </form>
 
-                        <form asp-action="DeleteImage" asp-route-productId="@Model.Id" method="post" onsubmit="return confirm('Xóa ảnh này?');">
-                            <input type="hidden" name="imageId" value="@image.Id" />
-                            @if (selectedVariantId.HasValue)
-                            {
-                                <input type="hidden" name="variantId" value="@selectedVariantId" />
-                            }
-                            <button class="btn btn-sm btn-outline-danger w-100" type="submit">Xóa ảnh</button>
-                        </form>
+                            <form asp-action="DeleteImage" asp-route-productId="@Model.Id" method="post" onsubmit="return confirm('Xóa ảnh này?');">
+                                <input type="hidden" name="imageId" value="@image.Id" />
+                                <button class="btn btn-sm btn-outline-danger w-100" type="submit">Xóa ảnh</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
-            </div>
-        }
-    </div>
+            }
+        </div>
+    }
 }
 
 @section Scripts {

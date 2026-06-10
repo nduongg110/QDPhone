@@ -13,16 +13,17 @@ public class ReviewsController : Controller
     public ReviewsController(ApplicationDbContext db) => _db = db;
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(int productId, int rating, string comment)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var hasPurchased = await _db.OrderItems
             .AsNoTracking()
-            .Where(x => x.Order != null &&
-                        x.Order.UserId == userId &&
-                        x.Order.Status != "Cancelled" &&
-                        x.Order.Status != "PaymentFailed")
-            .AnyAsync(x => x.ProductVariant != null && x.ProductVariant.ProductId == productId);
+            .Where(oi => oi.Order!.UserId == userId &&
+                         oi.Order.Status != "Cancelled" &&
+                         oi.Order.Status != "PaymentFailed" &&
+                         oi.ProductVariant!.ProductId == productId)
+            .AnyAsync();
         if (!hasPurchased)
         {
             TempData["Message"] = "Bạn cần mua sản phẩm này trước khi đánh giá.";
@@ -50,4 +51,3 @@ public class ReviewsController : Controller
         return RedirectToAction("Details", "Products", new { id = productId });
     }
 }
-
