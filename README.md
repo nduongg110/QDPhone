@@ -1,6 +1,10 @@
 QDPhone
 
 Website thương mại điện tử bán điện thoại & phụ kiện, xây dựng bằng ASP.NET Core MVC + Entity Framework Core.
+Dự án bao gồm 2 thư mục chính:
+QDPhone Code: Chứa toàn bộ mã nguồn dự án ASP.NET Core MVC.
+QDPhone Database: Chứa cơ sở dữ liệu mẫu để tham khảo cấu trúc dữ liệu và nhập dữ liệu ban đầu.
+Khi chạy dự án lần đầu, hãy sử dụng Entity Framework Core Migrations để tạo và cập nhật cơ sở dữ liệu. Thư mục QDPhone Database có thể được dùng để tham khảo dữ liệu mẫu hoặc phục vụ việc khởi tạo dữ liệu cho hệ thống.
 
 ## Tính năng
 
